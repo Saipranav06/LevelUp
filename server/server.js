@@ -3,6 +3,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
@@ -24,6 +25,12 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
+app.get("/api/health", (req, res) => {
+    res.json({
+        message: "Backend Connected Successfully 🚀"
+    });
+});
+
 app.get("/api/users", async (req, res) => {
     const users = await prisma.user.findMany();
 
@@ -33,12 +40,13 @@ app.get("/api/users", async (req, res) => {
 app.post("/api/register", async (req, res) => {
 
     const { username, email, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
     data: {
         username,
         email,
-        password,
+        password: hashedPassword,
         role
     }
 });
