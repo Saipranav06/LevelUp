@@ -168,6 +168,26 @@ app.post("/api/login", async (req, res) => {
 
 });
 
+//profile api
+
+app.get("/api/profile", authenticateToken, async (req, res) => {
+
+    const profile = await prisma.user.findUnique({
+        where: {
+            id: req.user.id
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true
+        }
+    });
+
+    res.json(profile);
+
+});
+
 
 // ==========================
 // Start Server
