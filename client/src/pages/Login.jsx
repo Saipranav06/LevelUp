@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../services/api";
 
 function Login() {
+
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -17,9 +20,8 @@ function Login() {
 
             localStorage.setItem("token", response.data.token);
 
-            console.log("Token Saved!");
+            navigate("/profile");
 
-            console.log(response.data);
         } catch (error) {
 
             console.log(error.response.data);
