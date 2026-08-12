@@ -6,6 +6,7 @@ import Resume from "./pages/Resume";
 import Analyze from "./pages/Analyze";
 import Jobs from "./pages/Jobs";
 
+
 function App() {
     return (
         <BrowserRouter>

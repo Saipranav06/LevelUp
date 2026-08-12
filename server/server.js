@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const upload = require("./multer");
 
 const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
@@ -187,6 +188,44 @@ app.get("/api/profile", authenticateToken, async (req, res) => {
     res.json(profile);
 
 });
+
+// ==========================
+// Resume Upload API
+// ==========================
+app.post(
+    "/api/upload-resume",
+    authenticateToken,
+    upload.single("resume"),
+    async (req, res) => {
+
+        try {
+
+            if (!req.file) {
+                return res.status(400).json({
+                    message: "No resume file uploaded"
+                });
+            }
+
+            console.log("Resume uploaded:", req.file.filename);
+
+            res.json({
+                message: "Resume uploaded successfully",
+                filename: req.file.filename,
+                originalName: req.file.originalname
+            });
+
+        } catch (err) {
+
+            console.error(err);
+
+            res.status(500).json({
+                message: "Resume upload failed"
+            });
+
+        }
+
+    }
+);
 
 
 // ==========================
