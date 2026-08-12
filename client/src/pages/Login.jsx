@@ -20,7 +20,7 @@ function Login() {
 
             localStorage.setItem("token", response.data.token);
 
-            navigate("/profile");
+            navigate("/dashboard");
 
         } catch (error) {
 
