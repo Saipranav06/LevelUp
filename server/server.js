@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const upload = require("./multer");
+const extractResumeText = require("./extractResume");
 
 const { PrismaClient } = require("@prisma/client");
 const { PrismaPg } = require("@prisma/adapter-pg");
@@ -207,11 +208,17 @@ app.post(
             }
 
             console.log("Resume uploaded:", req.file.filename);
+            const extractedText = await extractResumeText(req.file.path);
+
+            console.log("========== RESUME TEXT ==========");
+            console.log(extractedText);
+            console.log("=================================");
 
             res.json({
                 message: "Resume uploaded successfully",
                 filename: req.file.filename,
-                originalName: req.file.originalname
+                originalName: req.file.originalname,
+                extractedText: extractedText
             });
 
         } catch (err) {
@@ -226,6 +233,53 @@ app.post(
 
     }
 );
+
+// ==========================
+// Resume Analysis API
+// ==========================
+app.post("/api/analyze-resume", authenticateToken, async (req, res) => {
+
+    try {
+
+        const { resumeText } = req.body;
+
+        if (!resumeText || resumeText.trim().length === 0) {
+            return res.status(400).json({
+                message: "Resume text is required"
+            });
+        }
+
+        console.log("========== ANALYZING RESUME ==========");
+        console.log(resumeText);
+        console.log("======================================");
+
+        // Temporary analysis response
+        // AI will be connected here next.
+
+        const analysis = {
+            score: 0,
+            skills: [],
+            strengths: [],
+            weaknesses: [],
+            recommendations: []
+        };
+
+        res.json({
+            message: "Resume analysis endpoint working",
+            analysis
+        });
+
+    } catch (error) {
+
+        console.error("Resume analysis error:", error);
+
+        res.status(500).json({
+            message: "Failed to analyze resume"
+        });
+
+    }
+
+});
 
 
 // ==========================
