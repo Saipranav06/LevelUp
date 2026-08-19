@@ -1,0 +1,159 @@
+.analyze-page {
+    min-height: 100vh;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.analyze-title {
+    font-size: 40px;
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+}
+
+.analyze-subtitle {
+    color: #7da8e8;
+    letter-spacing: 4px;
+    margin-bottom: 40px;
+}
+
+.analyze-button {
+    padding: 14px 30px;
+
+    border: 1px solid #1677ff;
+    border-radius: 8px;
+
+    background: #101020;
+    color: white;
+
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+.analyze-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+
+    background: #171738;
+
+    box-shadow:
+        0 0 15px rgba(0, 119, 255, 0.5),
+        0 0 25px rgba(138, 43, 226, 0.2);
+}
+
+.analyze-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.analysis-error {
+    width: min(600px, 100%);
+    margin: 30px auto;
+    padding: 15px;
+
+    border: 1px solid #ff4444;
+    border-radius: 10px;
+
+    color: #ff7777;
+    background: rgba(60, 10, 10, 0.4);
+}
+
+.analysis-container {
+    width: min(900px, 100%);
+    margin: 50px auto 0;
+
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+
+    text-align: left;
+}
+
+.score-card {
+    grid-column: 1 / -1;
+
+    padding: 30px;
+
+    text-align: center;
+
+    border: 1px solid #1677ff;
+    border-radius: 16px;
+
+    background: rgba(8, 8, 18, 0.9);
+
+    box-shadow:
+        0 0 20px rgba(0, 119, 255, 0.25);
+}
+
+.score-card p {
+    color: #8fa8c9;
+    letter-spacing: 4px;
+    font-size: 13px;
+}
+
+.score-card h2 {
+    margin: 10px 0 0;
+
+    font-size: 52px;
+    color: white;
+}
+
+.analysis-card {
+    padding: 25px;
+
+    border: 1px solid #273b68;
+    border-radius: 14px;
+
+    background: rgba(8, 8, 18, 0.9);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.analysis-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #8a2be2;
+
+    box-shadow:
+        0 0 15px rgba(0, 119, 255, 0.3);
+}
+
+.analysis-card h2 {
+    margin-top: 0;
+
+    letter-spacing: 2px;
+}
+
+.analysis-card ul {
+    padding-left: 20px;
+}
+
+.analysis-card li {
+    margin-bottom: 10px;
+    color: #b7c7df;
+}
+
+@media (max-width: 700px) {
+
+    .analyze-title {
+        font-size: 28px;
+    }
+
+    .analysis-container {
+        grid-template-columns: 1fr;
+    }
+
+    .score-card {
+        grid-column: auto;
+    }
+
+}

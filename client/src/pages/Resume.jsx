@@ -48,8 +48,15 @@ function Resume() {
 
             console.log(response.data);
 
-            setMessage("🟢 RESUME UPLOADED SUCCESSFULLY");
+            localStorage.setItem(
+            "resumeText",
+            response.data.extractedText);
 
+            localStorage.setItem(
+            "resumeFileName",
+            response.data.originalName);
+
+            setMessage("🟢 RESUME UPLOADED SUCCESSFULLY");
         } catch (error) {
 
             console.error(error);
