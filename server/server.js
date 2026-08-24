@@ -259,25 +259,185 @@ app.get(
 
             const profile =
                 await prisma.user.findUnique({
+
                     where: {
                         id: req.user.id
                     },
+
                     select: {
+
                         id: true,
+
                         username: true,
+
                         email: true,
-                        role: true
+
+                        role: true,
+
+                        bio: true,
+
+                        profileImage: true,
+
+                        // ==========================
+                        // HUNTER DATA
+                        // ==========================
+
+                        hunterScore: true,
+
+                        hunterRank: true,
+
+                        hunterExp: true,
+
+                        hunterLevel: true,
+
+                        skillsCount: true
+
                     }
+
                 });
 
-            res.json(profile);
 
-        } catch (err) {
+            if (!profile) {
 
-            console.error(err);
+                return res.status(404).json({
+                    message: "Profile not found"
+                });
+
+            }
+
+
+            res.json({
+
+                user: {
+
+                    id:
+                        profile.id,
+
+                    username:
+                        profile.username,
+
+                    email:
+                        profile.email,
+
+                    role:
+                        profile.role,
+
+                    bio:
+                        profile.bio,
+
+                    profileImage:
+                        profile.profileImage
+
+                },
+
+                hunter: {
+
+                    score:
+                        profile.hunterScore,
+
+                    rank:
+                        profile.hunterRank,
+
+                    exp:
+                        profile.hunterExp,
+
+                    level:
+                        profile.hunterLevel,
+
+                    skillsCount:
+                        profile.skillsCount
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Profile error:",
+                error
+            );
 
             res.status(500).json({
-                message: "Failed to fetch profile"
+
+                message:
+                    "Failed to fetch profile"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ==========================
+// Hunter Stats API
+// ==========================
+
+app.get(
+    "/api/hunter",
+    authenticateToken,
+    async (req, res) => {
+
+        try {
+
+            const hunter =
+                await prisma.user.findUnique({
+
+                    where: {
+                        id: req.user.id
+                    },
+
+                    select: {
+                        hunterScore: true,
+                        hunterRank: true,
+                        hunterExp: true,
+                        hunterLevel: true,
+                        skillsCount: true
+                    }
+
+                });
+
+
+            if (!hunter) {
+
+                return res.status(404).json({
+                    message: "Hunter data not found"
+                });
+
+            }
+
+
+            res.json({
+
+                score:
+                    hunter.hunterScore,
+
+                rank:
+                    hunter.hunterRank,
+
+                exp:
+                    hunter.hunterExp,
+
+                level:
+                    hunter.hunterLevel,
+
+                skillsCount:
+                    hunter.skillsCount
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Hunter stats error:",
+                error
+            );
+
+            res.status(500).json({
+                message:
+                    "Failed to fetch hunter stats"
             });
 
         }
@@ -548,6 +708,257 @@ ${resumeText}
 
 
             // ==========================
+            // Calculate Hunter Rank
+            // ==========================
+
+            const score =
+                Number(analysis.score) || 0;
+
+
+            let hunterRank;
+
+            if (score >= 90) {
+
+                hunterRank = "S-RANK";
+
+            } else if (score >= 80) {
+
+                hunterRank = "A-RANK";
+
+            } else if (score >= 70) {
+
+                hunterRank = "B-RANK";
+
+            } else if (score >= 60) {
+
+                hunterRank = "C-RANK";
+
+            } else if (score >= 50) {
+
+                hunterRank = "D-RANK";
+
+            } else {
+
+                hunterRank = "E-RANK";
+
+            }
+
+
+            // ==========================
+            // Count Skills
+            // ==========================
+
+            const skillsCount =
+                Array.isArray(analysis.skills)
+                    ? analysis.skills.length
+                    : 0;
+
+
+            // ==========================
+            // Get Current Hunter Data
+            // ==========================
+
+            const currentHunter =
+                await prisma.user.findUnique({
+
+                    where: {
+                        id: req.user.id
+                    },
+
+                    select: {
+                        hunterExp: true,
+                        hunterLevel: true
+                    }
+
+                });
+
+
+            if (!currentHunter) {
+
+                return res.status(404).json({
+                    message: "Hunter data not found"
+                });
+
+            }
+
+
+            // ==========================
+            // Previous Hunter Level
+            // ==========================
+
+            const previousHunterLevel =
+                currentHunter.hunterLevel || 1;
+
+
+            // ==========================
+            // Calculate New EXP
+            // ==========================
+
+            const earnedExp =
+                score * 10;
+
+
+            const newHunterExp =
+                currentHunter.hunterExp +
+                earnedExp;
+
+
+            // ==========================
+            // Calculate New Hunter Level
+            // ==========================
+
+            const hunterLevel =
+                Math.floor(
+                    newHunterExp / 1000
+                ) + 1;
+
+
+            // ==========================
+            // LEVEL UP DETECTION
+            // ==========================
+
+            const didLevelUp =
+                hunterLevel >
+                previousHunterLevel;
+
+
+            const levelUpCount =
+                Math.max(
+                    0,
+                    hunterLevel -
+                    previousHunterLevel
+                );
+
+
+            // ==========================
+            // Level Up Message
+            // ==========================
+
+            let levelUpMessage = null;
+
+
+            if (didLevelUp) {
+
+                levelUpMessage =
+                    levelUpCount === 1
+                        ? `⚡ LEVEL UP! You reached Level ${hunterLevel}!`
+                        : `⚡ LEVEL UP! You advanced ${levelUpCount} levels and reached Level ${hunterLevel}!`;
+
+            }
+
+
+            // ==========================
+            // Save Analysis + Progress
+            // ==========================
+
+            await prisma.user.update({
+
+                where: {
+                    id: req.user.id
+                },
+
+                data: {
+
+                    hunterScore:
+                        score,
+
+                    hunterRank:
+                        hunterRank,
+
+                    hunterExp:
+                        newHunterExp,
+
+                    hunterLevel:
+                        hunterLevel,
+
+                    skillsCount:
+                        skillsCount,
+
+                    resumeAnalysis:
+                        analysis
+
+                }
+
+            });
+
+
+            // ==========================
+            // Hunter Progress Log
+            // ==========================
+
+            if (didLevelUp) {
+
+                console.log(
+                    "====================================="
+                );
+
+                console.log(
+                    "🎉🎉🎉 HUNTER LEVEL UP DETECTED 🎉🎉🎉"
+                );
+
+                console.log({
+
+                    userId:
+                        req.user.id,
+
+                    previousLevel:
+                        previousHunterLevel,
+
+                    newLevel:
+                        hunterLevel,
+
+                    levelUpCount:
+                        levelUpCount,
+
+                    earnedExp:
+                        earnedExp,
+
+                    totalExp:
+                        newHunterExp
+
+                });
+
+                console.log(
+                    levelUpMessage
+                );
+
+                console.log(
+                    "====================================="
+                );
+
+            } else {
+
+                console.log(
+                    "========== HUNTER PROGRESS =========="
+                );
+
+                console.log({
+
+                    userId:
+                        req.user.id,
+
+                    previousLevel:
+                        previousHunterLevel,
+
+                    currentLevel:
+                        hunterLevel,
+
+                    earnedExp:
+                        earnedExp,
+
+                    totalExp:
+                        newHunterExp
+
+                });
+
+                console.log(
+                    "====================================="
+                );
+
+            }
+
+
+            // ==========================
             // Send Analysis To Frontend
             // ==========================
 
@@ -557,7 +968,45 @@ ${resumeText}
                     "Resume analyzed successfully",
 
                 analysis:
-                    analysis
+                    analysis,
+
+                hunter: {
+
+                    score:
+                        score,
+
+                    rank:
+                        hunterRank,
+
+                    exp:
+                        newHunterExp,
+
+                    earnedExp:
+                        earnedExp,
+
+                    level:
+                        hunterLevel,
+
+                    previousLevel:
+                        previousHunterLevel,
+
+                    skillsCount:
+                        skillsCount,
+
+                    // ==========================
+                    // LEVEL UP DATA
+                    // ==========================
+
+                    didLevelUp:
+                        didLevelUp,
+
+                    levelUpCount:
+                        levelUpCount,
+
+                    levelUpMessage:
+                        levelUpMessage
+
+                }
 
             });
 

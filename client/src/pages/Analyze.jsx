@@ -17,16 +17,31 @@ function getHunterRank(score) {
 function Analyze() {
 
     const [analysis, setAnalysis] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
+    const [loading, setLoading] =
+        useState(false);
+
+    const [error, setError] =
+        useState("");
+
+    const [levelUp, setLevelUp] =
+        useState(null);
+
+
+    // ==========================
+    // ANALYZE RESUME
+    // ==========================
 
     const handleAnalyze = async () => {
 
         try {
 
             setLoading(true);
+
             setError("");
+
+            setLevelUp(null);
+
 
             const resumeText =
                 localStorage.getItem("resumeText");
@@ -39,6 +54,7 @@ function Analyze() {
                 );
 
                 return;
+
             }
 
 
@@ -48,21 +64,34 @@ function Analyze() {
 
             const response =
                 await api.post(
+
                     "/analyze-resume",
+
                     {
                         resumeText
                     },
+
                     {
                         headers: {
+
                             Authorization:
                                 `Bearer ${token}`
+
                         }
                     }
+
                 );
 
 
-            console.log(response.data);
+            console.log(
+                "Analysis response:",
+                response.data
+            );
 
+
+            // ==========================
+            // SAVE ANALYSIS
+            // ==========================
 
             const result =
                 response.data.analysis;
@@ -71,11 +100,45 @@ function Analyze() {
             setAnalysis(result);
 
 
-            // Save analysis for Dashboard/Profile later
             localStorage.setItem(
+
                 "resumeAnalysis",
+
                 JSON.stringify(result)
+
             );
+
+
+            // ==========================
+            // LEVEL UP DATA
+            // ==========================
+
+            const hunter =
+                response.data.hunter;
+
+
+            if (
+                hunter &&
+                hunter.didLevelUp
+            ) {
+
+                setLevelUp({
+
+                    message:
+                        hunter.levelUpMessage,
+
+                    level:
+                        hunter.level,
+
+                    previousLevel:
+                        hunter.previousLevel,
+
+                    earnedExp:
+                        hunter.earnedExp
+
+                });
+
+            }
 
 
         } catch (error) {
@@ -83,8 +146,10 @@ function Analyze() {
             console.error(error);
 
             setError(
+
                 error.response?.data?.message ||
                 "AI analysis failed"
+
             );
 
         } finally {
@@ -98,7 +163,9 @@ function Analyze() {
 
     const hunterRank =
         analysis
-            ? getHunterRank(analysis.score)
+            ? getHunterRank(
+                analysis.score
+            )
             : null;
 
 
@@ -107,9 +174,9 @@ function Analyze() {
         <div className="analyze-page">
 
 
-            {/* ========================= */}
-            {/* HEADER */}
-            {/* ========================= */}
+            {/* ==========================
+                HEADER
+            ========================== */}
 
             <h1 className="analyze-title">
                 ⚔️ HUNTER AI ANALYSIS ⚔️
@@ -121,26 +188,34 @@ function Analyze() {
             </p>
 
 
-            {/* ========================= */}
-            {/* ANALYZE BUTTON */}
-            {/* ========================= */}
+            {/* ==========================
+                ANALYZE BUTTON
+            ========================== */}
 
             <button
+
                 className="analyze-button"
+
                 onClick={handleAnalyze}
+
                 disabled={loading}
+
             >
 
                 {loading
+
                     ? "🤖 ANALYZING RESUME..."
-                    : "⚡ ANALYZE RESUME"}
+
+                    : "⚡ ANALYZE RESUME"
+
+                }
 
             </button>
 
 
-            {/* ========================= */}
-            {/* ERROR */}
-            {/* ========================= */}
+            {/* ==========================
+                ERROR
+            ========================== */}
 
             {error && (
 
@@ -153,18 +228,56 @@ function Analyze() {
             )}
 
 
-            {/* ========================= */}
-            {/* ANALYSIS RESULT */}
-            {/* ========================= */}
+            {/* ==========================
+                LEVEL UP
+            ========================== */}
+
+            {levelUp && (
+
+                <div className="level-up-card">
+
+                    <div className="level-up-icon">
+                        ⚡
+                    </div>
+
+
+                    <p className="level-up-title">
+                        LEVEL UP!
+                    </p>
+
+
+                    <h2 className="level-up-level">
+                        LEVEL {levelUp.level}
+                    </h2>
+
+
+                    <p className="level-up-message">
+                        {levelUp.message}
+                    </p>
+
+
+                    <div className="level-up-exp">
+                        +{levelUp.earnedExp} EXP
+                    </div>
+
+
+                </div>
+
+            )}
+
+
+            {/* ==========================
+                ANALYSIS RESULT
+            ========================== */}
 
             {analysis && (
 
                 <div className="analysis-container">
 
 
-                    {/* ========================= */}
-                    {/* HUNTER REPORT */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        HUNTER REPORT
+                    ========================== */}
 
                     <div className="hunter-report">
 
@@ -183,9 +296,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* SCORE */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        SCORE
+                    ========================== */}
 
                     <div className="score-card">
 
@@ -194,9 +307,15 @@ function Analyze() {
                         </p>
 
                         <h2>
+
                             {analysis.score}
-                            <span>/100</span>
+
+                            <span>
+                                /100
+                            </span>
+
                         </h2>
+
 
                         <div className="rank-display">
 
@@ -213,9 +332,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* SKILLS */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        SKILLS
+                    ========================== */}
 
                     <div className="analysis-card">
 
@@ -226,6 +345,7 @@ function Analyze() {
                         <ul>
 
                             {analysis.skills.map(
+
                                 (skill, index) => (
 
                                     <li key={index}>
@@ -233,6 +353,7 @@ function Analyze() {
                                     </li>
 
                                 )
+
                             )}
 
                         </ul>
@@ -240,9 +361,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* STRENGTHS */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        STRENGTHS
+                    ========================== */}
 
                     <div className="analysis-card">
 
@@ -253,6 +374,7 @@ function Analyze() {
                         <ul>
 
                             {analysis.strengths.map(
+
                                 (item, index) => (
 
                                     <li key={index}>
@@ -260,6 +382,7 @@ function Analyze() {
                                     </li>
 
                                 )
+
                             )}
 
                         </ul>
@@ -267,9 +390,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* WEAKNESSES */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        WEAKNESSES
+                    ========================== */}
 
                     <div className="analysis-card">
 
@@ -280,6 +403,7 @@ function Analyze() {
                         <ul>
 
                             {analysis.weaknesses.map(
+
                                 (item, index) => (
 
                                     <li key={index}>
@@ -287,6 +411,7 @@ function Analyze() {
                                     </li>
 
                                 )
+
                             )}
 
                         </ul>
@@ -294,9 +419,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* RECOMMENDATIONS */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        RECOMMENDATIONS
+                    ========================== */}
 
                     <div className="analysis-card recommendation-card">
 
@@ -307,6 +432,7 @@ function Analyze() {
                         <ul>
 
                             {analysis.recommendations.map(
+
                                 (item, index) => (
 
                                     <li key={index}>
@@ -314,6 +440,7 @@ function Analyze() {
                                     </li>
 
                                 )
+
                             )}
 
                         </ul>
@@ -321,9 +448,9 @@ function Analyze() {
                     </div>
 
 
-                    {/* ========================= */}
-                    {/* SYSTEM STATUS */}
-                    {/* ========================= */}
+                    {/* ==========================
+                        SYSTEM STATUS
+                    ========================== */}
 
                     <div className="analysis-status">
 
@@ -343,6 +470,7 @@ function Analyze() {
         </div>
 
     );
+
 }
 
 export default Analyze;
