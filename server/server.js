@@ -620,6 +620,521 @@ app.get(
 );
 
 // ==========================
+// Apply To Job API
+// ==========================
+
+app.post(
+    "/api/jobs/:id/apply",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const jobId =
+                Number(req.params.id);
+
+            // ==========================
+            // Validate Job ID
+            // ==========================
+
+            if (isNaN(jobId)) {
+
+                return res.status(400).json({
+                    message:
+                        "Invalid job ID"
+                });
+
+            }
+
+
+            // ==========================
+            // Check Job Exists
+            // ==========================
+
+            const job =
+                await prisma.job.findUnique({
+
+                    where: {
+                        id: jobId
+                    }
+
+                });
+
+
+            if (!job) {
+
+                return res.status(404).json({
+                    message:
+                        "Job not found"
+                });
+
+            }
+
+
+            // ==========================
+            // Create Application
+            // ==========================
+
+            const application =
+                await prisma.application.create({
+
+                    data: {
+
+                        applicantId:
+                            req.user.id,
+
+                        jobId:
+                            jobId,
+
+                        status:
+                            "APPLIED"
+
+                    }
+
+                });
+
+
+            // ==========================
+            // Send Response
+            // ==========================
+
+            res.status(201).json({
+
+                message:
+                    "Application submitted successfully",
+
+                application:
+                    application
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Apply to job error:",
+                error
+            );
+
+
+            // ==========================
+            // Duplicate Application
+            // ==========================
+
+            if (
+                error.code === "P2002"
+            ) {
+
+                return res.status(409).json({
+
+                    message:
+                        "You have already applied to this job"
+
+                });
+
+            }
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to apply for job"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
+// Get Employer Applications API
+// ==========================
+
+app.get(
+    "/api/employer/applications",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const applications =
+                await prisma.application.findMany({
+
+                    where: {
+
+                        job: {
+
+                            employerId:
+                                req.user.id
+
+                        }
+
+                    },
+
+                    include: {
+
+                        applicant: {
+
+                            select: {
+
+                                id: true,
+
+                                username: true,
+
+                                email: true,
+
+                                bio: true,
+
+                                profileImage: true,
+
+                                hunterScore: true,
+
+                                hunterRank: true,
+
+                                hunterExp: true,
+
+                                hunterLevel: true,
+
+                                skillsCount: true,
+
+                                resumeAnalysis: true
+
+                            }
+
+                        },
+
+                        job: {
+
+                            select: {
+
+                                id: true,
+
+                                title: true,
+
+                                location: true,
+
+                                salary: true,
+
+                                experience: true
+
+                            }
+
+                        }
+
+                    },
+
+                    orderBy: {
+
+                        createdAt: "desc"
+
+                    }
+
+                });
+
+
+            res.json({
+
+                applications:
+                    applications
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get employer applications error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch employer applications"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
+// Update Application Status API
+// ==========================
+
+app.put(
+    "/api/applications/:id/status",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const applicationId =
+                Number(req.params.id);
+
+            const {
+                status
+            } = req.body;
+
+
+            // ==========================
+            // Validate Application ID
+            // ==========================
+
+            if (isNaN(applicationId)) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Invalid application ID"
+
+                });
+
+            }
+
+
+            // ==========================
+            // Validate Status
+            // ==========================
+
+            const allowedStatuses = [
+
+                "APPLIED",
+                "SHORTLISTED",
+                "ACCEPTED",
+                "REJECTED"
+
+            ];
+
+
+            if (
+                !allowedStatuses.includes(status)
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Invalid application status"
+
+                });
+
+            }
+
+
+            // ==========================
+            // Find Application
+            // ==========================
+
+            const application =
+                await prisma.application.findUnique({
+
+                    where: {
+                        id: applicationId
+                    },
+
+                    include: {
+
+                        job: {
+
+                            select: {
+
+                                employerId: true
+
+                            }
+
+                        }
+
+                    }
+
+                });
+
+
+            if (!application) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Application not found"
+
+                });
+
+            }
+
+
+            // ==========================
+            // Check Employer Ownership
+            // ==========================
+
+            if (
+                application.job.employerId !==
+                req.user.id
+            ) {
+
+                return res.status(403).json({
+
+                    message:
+                        "You are not authorized to update this application"
+
+                });
+
+            }
+
+
+            // ==========================
+            // Update Status
+            // ==========================
+
+            const updatedApplication =
+                await prisma.application.update({
+
+                    where: {
+
+                        id:
+                            applicationId
+
+                    },
+
+                    data: {
+
+                        status:
+                            status
+
+                    }
+
+                });
+
+
+            // ==========================
+            // Send Response
+            // ==========================
+
+            res.json({
+
+                message:
+                    "Application status updated successfully",
+
+                application:
+                    updatedApplication
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Update application status error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to update application status"
+
+            });
+
+        }
+
+    }
+);
+// ==========================
+// Get My Applications API
+// ==========================
+
+app.get(
+    "/api/my-applications",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const applications =
+                await prisma.application.findMany({
+
+                    where: {
+
+                        applicantId:
+                            req.user.id
+
+                    },
+
+                    include: {
+
+                        job: {
+
+                            select: {
+
+                                id: true,
+
+                                title: true,
+
+                                description: true,
+
+                                location: true,
+
+                                salary: true,
+
+                                experience: true,
+
+                                employer: {
+
+                                    select: {
+
+                                        id: true,
+
+                                        username: true,
+
+                                        email: true
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    orderBy: {
+
+                        createdAt: "desc"
+
+                    }
+
+                });
+
+
+            res.json({
+
+                applications:
+                    applications
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get my applications error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch your applications"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
 // Resume Upload API
 // ==========================
 
