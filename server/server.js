@@ -445,6 +445,179 @@ app.get(
     }
 );
 
+// ==========================
+// Create Job API
+// ==========================
+
+app.post(
+    "/api/jobs",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const {
+                title,
+                description,
+                experience,
+                salary,
+                location
+            } = req.body;
+
+
+            // ==========================
+            // Validate Required Fields
+            // ==========================
+
+            if (
+                !title ||
+                !description ||
+                experience === undefined ||
+                !salary ||
+                !location
+            ) {
+
+                return res.status(400).json({
+                    message:
+                        "All job fields are required"
+                });
+
+            }
+
+
+            // ==========================
+            // Create Job
+            // ==========================
+
+            const job =
+                await prisma.job.create({
+
+                    data: {
+
+                        title:
+                            title,
+
+                        description:
+                            description,
+
+                        experience:
+                            Number(experience),
+
+                        salary:
+                            salary,
+
+                        location:
+                            location,
+
+                        // Logged-in employer
+                        employerId:
+                            req.user.id
+
+                    }
+
+                });
+
+
+            // ==========================
+            // Send Response
+            // ==========================
+
+            res.status(201).json({
+
+                message:
+                    "Job created successfully",
+
+                job:
+                    job
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Create job error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to create job"
+
+            });
+
+        }
+
+    }
+);
+// ==========================
+// Get All Jobs API
+// ==========================
+
+app.get(
+    "/api/jobs",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const jobs =
+                await prisma.job.findMany({
+
+                    include: {
+
+                        employer: {
+
+                            select: {
+
+                                id: true,
+
+                                username: true,
+
+                                email: true
+
+                            }
+
+                        }
+
+                    },
+
+                    orderBy: {
+
+                        createdAt: "desc"
+
+                    }
+
+                });
+
+
+            res.json({
+
+                jobs:
+                    jobs
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get jobs error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch jobs"
+
+            });
+
+        }
+
+    }
+);
 
 // ==========================
 // Resume Upload API
