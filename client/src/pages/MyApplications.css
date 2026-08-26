@@ -1,0 +1,348 @@
+.applications-page {
+    min-height: 100vh;
+    padding: 40px;
+    background: #0b0b0f;
+    color: white;
+}
+
+.applications-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.applications-header h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.applications-header p {
+    color: #999;
+    font-size: 17px;
+}
+
+
+/* ==========================
+   SUMMARY
+========================== */
+
+.applications-summary {
+    max-width: 1100px;
+    margin: 0 auto 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.summary-card {
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.summary-icon {
+    font-size: 25px;
+}
+
+.summary-label {
+    color: #888;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.summary-value {
+    margin-left: auto;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+
+/* ==========================
+   APPLICATION LIST
+========================== */
+
+.applications-list {
+    max-width: 1100px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.application-card {
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 18px;
+    padding: 28px;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.application-card:hover {
+    transform: translateY(-3px);
+    border-color: #444451;
+}
+
+
+/* ==========================
+   HEADER
+========================== */
+
+.application-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.application-job {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.application-job-icon {
+    font-size: 38px;
+}
+
+.application-job h2 {
+    margin: 0 0 6px;
+    font-size: 24px;
+}
+
+.application-job p {
+    margin: 0;
+    color: #999;
+}
+
+
+/* ==========================
+   STATUS
+========================== */
+
+.application-status {
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.status-applied {
+    background: #24242e;
+    color: #bbb;
+}
+
+.status-shortlisted {
+    background: #332f1c;
+    color: #e6d76b;
+}
+
+.status-accepted {
+    background: #193523;
+    color: #73d18c;
+}
+
+.status-rejected {
+    background: #351c1c;
+    color: #e27676;
+}
+
+
+/* ==========================
+   DETAILS
+========================== */
+
+.application-details {
+    display: flex;
+    gap: 25px;
+    margin: 25px 0;
+    padding: 18px 0;
+    border-top: 1px solid #292934;
+    border-bottom: 1px solid #292934;
+    color: #bbb;
+}
+
+
+/* ==========================
+   PROGRESS
+========================== */
+
+.progress-title {
+    color: #777;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+}
+
+.progress-line {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    color: #555;
+    min-width: 80px;
+}
+
+.progress-step span {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #24242d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.progress-step small {
+    font-size: 11px;
+}
+
+.progress-step.active {
+    color: white;
+}
+
+.progress-step.active span {
+    background: #30303b;
+}
+
+.progress-connector {
+    height: 2px;
+    flex: 1;
+    background: #292934;
+    margin-bottom: 20px;
+}
+
+.progress-connector.active {
+    background: #666;
+}
+
+
+/* ==========================
+   REJECTED
+========================== */
+
+.rejected-message {
+    margin-top: 20px;
+    padding: 13px;
+    border-radius: 9px;
+    background: #261919;
+    border: 1px solid #432525;
+    color: #df8888;
+}
+
+
+/* ==========================
+   FOOTER
+========================== */
+
+.application-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+    color: #666;
+    font-size: 12px;
+}
+
+
+/* ==========================
+   LOADING / ERROR / EMPTY
+========================== */
+
+.applications-loading,
+.applications-error,
+.applications-empty {
+    max-width: 600px;
+    margin: 80px auto;
+    text-align: center;
+    padding: 40px;
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 16px;
+}
+
+.applications-error {
+    border-color: #702020;
+}
+
+.applications-error p,
+.applications-empty p {
+    color: #999;
+}
+
+.empty-icon {
+    font-size: 50px;
+    margin-bottom: 15px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 20px;
+    border: 4px solid #333;
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ==========================
+   MOBILE
+========================== */
+
+@media (max-width: 700px) {
+
+    .applications-page {
+        padding: 20px;
+    }
+
+    .applications-header h1 {
+        font-size: 30px;
+    }
+
+    .applications-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .application-card-header {
+        flex-direction: column;
+    }
+
+    .application-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .progress-step {
+        min-width: 55px;
+    }
+
+    .progress-step small {
+        font-size: 9px;
+    }
+
+    .application-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

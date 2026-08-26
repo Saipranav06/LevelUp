@@ -1,0 +1,494 @@
+.employer-page {
+    min-height: 100vh;
+    padding: 40px;
+    background: #0b0b0f;
+    color: white;
+}
+
+.employer-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.employer-header h1 {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.employer-header p {
+    color: #999;
+}
+
+
+/* ==========================
+   SUMMARY
+========================== */
+
+.employer-summary {
+    max-width: 1100px;
+    margin: 0 auto 35px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 18px;
+}
+
+.employer-summary-card {
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 14px;
+    padding: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.employer-summary-card > span {
+    font-size: 28px;
+}
+
+.employer-summary-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.employer-summary-card small {
+    color: #777;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.employer-summary-card strong {
+    font-size: 25px;
+}
+
+
+/* ==========================
+   SECTION
+========================== */
+
+.employer-section {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.section-title h2 {
+    margin: 0;
+}
+
+.section-title span {
+    color: #777;
+}
+
+
+/* ==========================
+   JOBS
+========================== */
+
+.employer-jobs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.employer-job-card {
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 16px;
+    padding: 22px;
+
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.employer-job-card:hover {
+    transform: translateY(-2px);
+    border-color: #444451;
+}
+
+.employer-job-main {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.employer-job-icon {
+    font-size: 38px;
+}
+
+.employer-job-main h3 {
+    margin: 0 0 7px;
+    font-size: 20px;
+}
+
+.employer-job-main p {
+    margin: 4px 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.job-applicant-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 90px;
+}
+
+.job-applicant-count strong {
+    font-size: 25px;
+}
+
+.job-applicant-count span {
+    color: #777;
+    font-size: 11px;
+}
+
+.view-applicants-button {
+    border: none;
+    border-radius: 9px;
+    padding: 12px 16px;
+    background: white;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.view-applicants-button:hover {
+    opacity: 0.85;
+}
+
+
+/* ==========================
+   MODAL
+========================== */
+
+.employer-modal-overlay {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.8);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 1000;
+}
+
+.employer-modal {
+    position: relative;
+
+    width: 100%;
+    max-width: 850px;
+    max-height: 90vh;
+
+    overflow-y: auto;
+
+    background: #15151c;
+    border: 1px solid #353541;
+    border-radius: 20px;
+
+    padding: 32px;
+}
+
+.employer-modal-close {
+    position: absolute;
+    right: 18px;
+    top: 15px;
+
+    width: 38px;
+    height: 38px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #25252e;
+    color: white;
+
+    font-size: 25px;
+    cursor: pointer;
+}
+
+.employer-modal-close:hover {
+    background: #383842;
+}
+
+.modal-job-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 25px;
+}
+
+.modal-job-heading > span {
+    font-size: 42px;
+}
+
+.modal-job-heading h2 {
+    margin: 0 0 5px;
+}
+
+.modal-job-heading p {
+    margin: 0;
+    color: #888;
+}
+
+
+/* ==========================
+   APPLICANTS
+========================== */
+
+.applicant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.applicant-card {
+    background: #1c1c25;
+    border: 1px solid #2d2d38;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.applicant-info {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.applicant-avatar {
+    width: 45px;
+    height: 45px;
+
+    border-radius: 50%;
+    background: #292934;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+}
+
+.applicant-info h3 {
+    margin: 0 0 4px;
+}
+
+.applicant-info p {
+    margin: 0;
+    color: #888;
+    font-size: 13px;
+}
+
+
+/* ==========================
+   HUNTER INFO
+========================== */
+
+.hunter-info {
+    display: flex;
+    gap: 10px;
+    margin: 18px 0;
+    flex-wrap: wrap;
+}
+
+.hunter-info span {
+    padding: 7px 10px;
+    background: #24242d;
+    border-radius: 8px;
+    color: #bbb;
+    font-size: 12px;
+}
+
+
+/* ==========================
+   STATUS
+========================== */
+
+.applicant-status {
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 7px 12px;
+    border-radius: 20px;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-applied {
+    background: #292934;
+    color: #bbb;
+}
+
+.status-shortlisted {
+    background: #3a351d;
+    color: #f0d85c;
+}
+
+.status-accepted {
+    background: #193923;
+    color: #71d68b;
+}
+
+.status-rejected {
+    background: #3a1e1e;
+    color: #e37b7b;
+}
+
+
+/* ==========================
+   ACTIONS
+========================== */
+
+.applicant-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.applicant-actions button {
+    flex: 1;
+
+    border: none;
+    border-radius: 8px;
+
+    padding: 11px;
+
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.applicant-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shortlist-button {
+    background: #3a351d;
+    color: #f0d85c;
+}
+
+.accept-button {
+    background: #193923;
+    color: #71d68b;
+}
+
+.reject-button {
+    background: #3a1e1e;
+    color: #e37b7b;
+}
+
+
+/* ==========================
+   EMPTY / LOADING / ERROR
+========================== */
+
+.empty-box,
+.employer-loading,
+.employer-error {
+    text-align: center;
+    padding: 50px;
+
+    background: #15151c;
+    border: 1px solid #292934;
+    border-radius: 16px;
+}
+
+.empty-box {
+    color: #888;
+}
+
+.employer-error {
+    max-width: 600px;
+    margin: 60px auto;
+    border-color: #702020;
+}
+
+.employer-error p {
+    color: #999;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+
+    margin: 0 auto 20px;
+
+    border: 4px solid #333;
+    border-top: 4px solid white;
+
+    border-radius: 50%;
+
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ==========================
+   MOBILE
+========================== */
+
+@media (max-width: 800px) {
+
+    .employer-page {
+        padding: 20px;
+    }
+
+    .employer-summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .employer-job-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .job-applicant-count {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .applicant-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .employer-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .employer-header h1 {
+        font-size: 30px;
+    }
+}
