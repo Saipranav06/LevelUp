@@ -70,7 +70,7 @@ function MyApplications() {
 
 
     // ==========================
-    // STATUS CLASS
+    // STATUS HELPERS
     // ==========================
 
     const getStatusClass = (status) => {
@@ -97,10 +97,6 @@ function MyApplications() {
     };
 
 
-    // ==========================
-    // STATUS ICON
-    // ==========================
-
     const getStatusIcon = (status) => {
 
         switch (status) {
@@ -109,18 +105,41 @@ function MyApplications() {
                 return "📨";
 
             case "SHORTLISTED":
-                return "🟡";
+                return "🎯";
 
             case "ACCEPTED":
-                return "🟢";
+                return "✓";
 
             case "REJECTED":
-                return "🔴";
+                return "×";
 
             default:
                 return "📋";
 
         }
+
+    };
+
+
+    // ==========================
+    // PROGRESS
+    // ==========================
+
+    const getProgressState = (status) => {
+
+        if (status === "REJECTED") {
+            return 1;
+        }
+
+        if (status === "ACCEPTED") {
+            return 3;
+        }
+
+        if (status === "SHORTLISTED") {
+            return 2;
+        }
+
+        return 1;
 
     };
 
@@ -137,8 +156,12 @@ function MyApplications() {
 
                 <div className="applications-header">
 
+                    <div className="system-kicker">
+                        HUNTER SYSTEM / APPLICATIONS
+                    </div>
+
                     <h1>
-                        📋 MY APPLICATIONS
+                        MY APPLICATIONS
                     </h1>
 
                     <p>
@@ -149,10 +172,22 @@ function MyApplications() {
 
                 <div className="applications-loading">
 
-                    <div className="loading-spinner"></div>
+                    <div className="application-loader">
+
+                        <div className="loader-ring"></div>
+
+                        <div className="loader-core">
+                            <span>LVL</span>
+                        </div>
+
+                    </div>
+
+                    <div className="loading-label">
+                        SYNCHRONIZING APPLICATION DATA
+                    </div>
 
                     <p>
-                        Loading your applications...
+                        Connecting to Hunter Database...
                     </p>
 
                 </div>
@@ -176,8 +211,12 @@ function MyApplications() {
 
                 <div className="applications-header">
 
+                    <div className="system-kicker">
+                        HUNTER SYSTEM / APPLICATIONS
+                    </div>
+
                     <h1>
-                        📋 MY APPLICATIONS
+                        MY APPLICATIONS
                     </h1>
 
                     <p>
@@ -188,13 +227,30 @@ function MyApplications() {
 
                 <div className="applications-error">
 
+                    <div className="error-symbol">
+                        !
+                    </div>
+
+                    <div className="error-kicker">
+                        SYSTEM ERROR
+                    </div>
+
                     <h2>
-                        🔴 APPLICATION ERROR
+                        APPLICATION DATA UNAVAILABLE
                     </h2>
 
                     <p>
                         {error}
                     </p>
+
+                    <button
+                        className="retry-button"
+                        onClick={() =>
+                            window.location.reload()
+                        }
+                    >
+                        RECONNECT
+                    </button>
 
                 </div>
 
@@ -203,6 +259,38 @@ function MyApplications() {
         );
 
     }
+
+
+    // ==========================
+    // SUMMARY DATA
+    // ==========================
+
+    const totalApplications =
+        applications.length;
+
+    const appliedCount =
+        applications.filter(
+            (application) =>
+                application.status === "APPLIED"
+        ).length;
+
+    const shortlistedCount =
+        applications.filter(
+            (application) =>
+                application.status === "SHORTLISTED"
+        ).length;
+
+    const acceptedCount =
+        applications.filter(
+            (application) =>
+                application.status === "ACCEPTED"
+        ).length;
+
+    const rejectedCount =
+        applications.filter(
+            (application) =>
+                application.status === "REJECTED"
+        ).length;
 
 
     // ==========================
@@ -217,8 +305,12 @@ function MyApplications() {
 
                 <div className="applications-header">
 
+                    <div className="system-kicker">
+                        HUNTER SYSTEM / APPLICATIONS
+                    </div>
+
                     <h1>
-                        📋 MY APPLICATIONS
+                        MY APPLICATIONS
                     </h1>
 
                     <p>
@@ -229,16 +321,21 @@ function MyApplications() {
 
                 <div className="applications-empty">
 
-                    <div className="empty-icon">
-                        📭
+                    <div className="empty-orb">
+                        <span>📭</span>
+                    </div>
+
+                    <div className="empty-kicker">
+                        NO ACTIVE MISSIONS
                     </div>
 
                     <h2>
-                        NO APPLICATIONS YET
+                        APPLICATION QUEUE EMPTY
                     </h2>
 
                     <p>
-                        You haven't applied to any jobs yet.
+                        You have not submitted any job
+                        applications yet.
                     </p>
 
                 </div>
@@ -251,7 +348,7 @@ function MyApplications() {
 
 
     // ==========================
-    // APPLICATIONS PAGE
+    // MAIN APPLICATION PAGE
     // ==========================
 
     return (
@@ -264,8 +361,12 @@ function MyApplications() {
 
             <div className="applications-header">
 
+                <div className="system-kicker">
+                    HUNTER SYSTEM / APPLICATIONS
+                </div>
+
                 <h1>
-                    📋 MY APPLICATIONS
+                    MY APPLICATIONS
                 </h1>
 
                 <p>
@@ -276,74 +377,131 @@ function MyApplications() {
 
 
             {/* ==========================
+                SYSTEM STATUS
+            ========================== */}
+
+            <div className="applications-system-bar">
+
+                <div className="system-status-left">
+
+                    <span className="system-status-dot"></span>
+
+                    <span>
+                        APPLICATION SYSTEM ONLINE
+                    </span>
+
+                </div>
+
+                <span className="system-status-right">
+                    {totalApplications} ACTIVE RECORD
+                    {totalApplications !== 1 ? "S" : ""}
+                </span>
+
+            </div>
+
+
+            {/* ==========================
                 SUMMARY
             ========================== */}
 
             <div className="applications-summary">
 
-                <div className="summary-card">
+                <div className="summary-card total-card">
 
-                    <span className="summary-icon">
-                        📋
-                    </span>
+                    <div className="summary-card-top">
+
+                        <span className="summary-icon">
+                            ◈
+                        </span>
+
+                        <span className="summary-index">
+                            01
+                        </span>
+
+                    </div>
 
                     <span className="summary-label">
-                        TOTAL
+                        TOTAL APPLICATIONS
                     </span>
 
-                    <span className="summary-value">
-                        {applications.length}
-                    </span>
+                    <strong className="summary-value">
+                        {totalApplications}
+                    </strong>
 
                 </div>
 
 
                 <div className="summary-card">
 
-                    <span className="summary-icon">
-                        🟡
+                    <div className="summary-card-top">
+
+                        <span className="summary-icon">
+                            ◌
+                        </span>
+
+                        <span className="summary-index">
+                            02
+                        </span>
+
+                    </div>
+
+                    <span className="summary-label">
+                        SUBMITTED
                     </span>
+
+                    <strong className="summary-value">
+                        {appliedCount}
+                    </strong>
+
+                </div>
+
+
+                <div className="summary-card">
+
+                    <div className="summary-card-top">
+
+                        <span className="summary-icon">
+                            ◎
+                        </span>
+
+                        <span className="summary-index">
+                            03
+                        </span>
+
+                    </div>
 
                     <span className="summary-label">
                         SHORTLISTED
                     </span>
 
-                    <span className="summary-value">
-
-                        {
-                            applications.filter(
-                                (application) =>
-                                    application.status ===
-                                    "SHORTLISTED"
-                            ).length
-                        }
-
-                    </span>
+                    <strong className="summary-value">
+                        {shortlistedCount}
+                    </strong>
 
                 </div>
 
 
-                <div className="summary-card">
+                <div className="summary-card accepted-summary">
 
-                    <span className="summary-icon">
-                        🟢
-                    </span>
+                    <div className="summary-card-top">
+
+                        <span className="summary-icon">
+                            ✓
+                        </span>
+
+                        <span className="summary-index">
+                            04
+                        </span>
+
+                    </div>
 
                     <span className="summary-label">
                         ACCEPTED
                     </span>
 
-                    <span className="summary-value">
-
-                        {
-                            applications.filter(
-                                (application) =>
-                                    application.status ===
-                                    "ACCEPTED"
-                            ).length
-                        }
-
-                    </span>
+                    <strong className="summary-value">
+                        {acceptedCount}
+                    </strong>
 
                 </div>
 
@@ -351,263 +509,421 @@ function MyApplications() {
 
 
             {/* ==========================
-                APPLICATION LIST
+                APPLICATIONS
             ========================== */}
 
-            <div className="applications-list">
+            <div className="applications-section">
 
-                {applications.map(
-                    (application) => {
+                <div className="section-heading">
 
-                        const job =
-                            application.job;
+                    <div>
 
-                        const status =
-                            application.status;
+                        <span className="section-kicker">
+                            MISSION LOG
+                        </span>
 
-                        return (
+                        <h2>
+                            APPLICATION HISTORY
+                        </h2>
 
-                            <div
-                                className="application-card"
-                                key={application.id}
-                            >
+                    </div>
 
-                                {/* ==========================
-                                    CARD HEADER
-                                ========================== */}
+                    <span className="section-count">
+                        {totalApplications
+                            .toString()
+                            .padStart(2, "0")}
+                    </span>
 
-                                <div className="application-card-header">
-
-                                    <div className="application-job">
-
-                                        <div className="application-job-icon">
-                                            💻
-                                        </div>
-
-                                        <div>
-
-                                            <h2>
-                                                {job?.title ||
-                                                    "Unknown Job"}
-                                            </h2>
-
-                                            <p>
-                                                🏢{" "}
-                                                {
-                                                    job?.employer
-                                                        ?.username ||
-                                                    "Company"
-                                                }
-                                            </p>
-
-                                        </div>
-
-                                    </div>
+                </div>
 
 
-                                    {/* STATUS */}
+                <div className="applications-list">
 
-                                    <div
-                                        className={
-                                            `application-status ${
-                                                getStatusClass(status)
-                                            }`
-                                        }
-                                    >
+                    {applications.map(
+                        (application, index) => {
+
+                            const job =
+                                application.job;
+
+                            const status =
+                                application.status;
+
+                            const progress =
+                                getProgressState(status);
+
+                            return (
+
+                                <div
+                                    className={`application-card ${getStatusClass(status)}`}
+                                    key={application.id}
+                                    style={{
+                                        "--card-delay":
+                                            `${index * 0.08}s`
+                                    }}
+                                >
+
+                                    {/* CARD TOP LINE */}
+
+                                    <div className="card-top-line">
 
                                         <span>
-                                            {getStatusIcon(status)}
+                                            APPLICATION #
+                                            {application.id}
                                         </span>
 
-                                        {status}
+                                        <span>
+                                            {new Date(
+                                                application.createdAt
+                                            ).toLocaleDateString()}
+                                        </span>
 
                                     </div>
 
-                                </div>
 
+                                    {/* MAIN HEADER */}
 
-                                {/* ==========================
-                                    JOB DETAILS
-                                ========================== */}
+                                    <div className="application-card-header">
 
-                                <div className="application-details">
+                                        <div className="application-job">
 
-                                    <div>
-                                        📍{" "}
-                                        {job?.location ||
-                                            "Not specified"}
-                                    </div>
+                                            <div className="application-job-icon">
 
-                                    <div>
-                                        💰{" "}
-                                        {job?.salary ||
-                                            "Not specified"}
-                                    </div>
+                                                <div className="job-icon-inner">
+                                                    💻
+                                                </div>
 
-                                    <div>
-                                        🧠{" "}
-                                        {job?.experience ??
-                                            "N/A"}
-                                        + years
-                                    </div>
+                                            </div>
 
-                                </div>
+                                            <div>
 
+                                                <div className="job-module">
+                                                    JOB OPPORTUNITY
+                                                </div>
 
-                                {/* ==========================
-                                    APPLICATION PROGRESS
-                                ========================== */}
+                                                <h2>
+                                                    {job?.title ||
+                                                        "Unknown Job"}
+                                                </h2>
 
-                                <div className="application-progress">
+                                                <p>
+                                                    <span>
+                                                        ◈
+                                                    </span>
 
-                                    <div className="progress-title">
-                                        APPLICATION PROGRESS
-                                    </div>
+                                                    {job?.employer
+                                                        ?.username ||
+                                                        "Company"}
+                                                </p>
 
-                                    <div className="progress-line">
-
-                                        <div
-                                            className={
-                                                `progress-step ${
-                                                    [
-                                                        "APPLIED",
-                                                        "SHORTLISTED",
-                                                        "ACCEPTED"
-                                                    ].includes(status)
-                                                        ? "active"
-                                                        : ""
-                                                }`
-                                            }
-                                        >
-
-                                            <span>
-                                                📨
-                                            </span>
-
-                                            <small>
-                                                Applied
-                                            </small>
+                                            </div>
 
                                         </div>
 
 
-                                        <div
-                                            className={
-                                                `progress-connector ${
-                                                    [
-                                                        "SHORTLISTED",
-                                                        "ACCEPTED"
-                                                    ].includes(status)
-                                                        ? "active"
-                                                        : ""
-                                                }`
-                                            }
-                                        ></div>
-
+                                        {/* STATUS */}
 
                                         <div
-                                            className={
-                                                `progress-step ${
-                                                    [
-                                                        "SHORTLISTED",
-                                                        "ACCEPTED"
-                                                    ].includes(status)
-                                                        ? "active"
-                                                        : ""
-                                                }`
-                                            }
+                                            className={`application-status ${getStatusClass(status)}`}
                                         >
 
-                                            <span>
-                                                🟡
+                                            <span className="status-icon">
+                                                {getStatusIcon(status)}
                                             </span>
 
-                                            <small>
-                                                Shortlisted
-                                            </small>
-
-                                        </div>
-
-
-                                        <div
-                                            className={
-                                                `progress-connector ${
-                                                    status ===
-                                                    "ACCEPTED"
-                                                        ? "active"
-                                                        : ""
-                                                }`
-                                            }
-                                        ></div>
-
-
-                                        <div
-                                            className={
-                                                `progress-step ${
-                                                    status ===
-                                                    "ACCEPTED"
-                                                        ? "active"
-                                                        : ""
-                                                }`
-                                            }
-                                        >
-
                                             <span>
-                                                🟢
+                                                {status}
                                             </span>
-
-                                            <small>
-                                                Accepted
-                                            </small>
 
                                         </div>
 
                                     </div>
 
 
-                                    {/* REJECTED */}
+                                    {/* DETAILS */}
 
-                                    {status === "REJECTED" && (
+                                    <div className="application-details">
 
-                                        <div className="rejected-message">
+                                        <div className="detail-item">
 
-                                            🔴 Unfortunately,
-                                            this application was
-                                            rejected.
+                                            <span className="detail-icon">
+                                                ◉
+                                            </span>
+
+                                            <div>
+
+                                                <small>
+                                                    LOCATION
+                                                </small>
+
+                                                <strong>
+                                                    {job?.location ||
+                                                        "Not specified"}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div className="detail-item">
+
+                                            <span className="detail-icon">
+                                                ₹
+                                            </span>
+
+                                            <div>
+
+                                                <small>
+                                                    COMPENSATION
+                                                </small>
+
+                                                <strong>
+                                                    {job?.salary ||
+                                                        "Not specified"}
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div className="detail-item">
+
+                                            <span className="detail-icon">
+                                                ◈
+                                            </span>
+
+                                            <div>
+
+                                                <small>
+                                                    EXPERIENCE
+                                                </small>
+
+                                                <strong>
+                                                    {job?.experience ??
+                                                        "N/A"}
+                                                    + years
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    {/* PROGRESS */}
+
+                                    <div className="application-progress">
+
+                                        <div className="progress-header">
+
+                                            <span>
+                                                APPLICATION PROTOCOL
+                                            </span>
+
+                                            <span>
+                                                {status === "REJECTED"
+                                                    ? "TERMINATED"
+                                                    : `${Math.round(
+                                                        (progress / 3) *
+                                                        100
+                                                    )}% COMPLETE`}
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="progress-line">
+
+                                            {/* APPLIED */}
+
+                                            <div
+                                                className={`progress-node ${
+                                                    progress >= 1
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                            >
+
+                                                <span>
+                                                    01
+                                                </span>
+
+                                                <small>
+                                                    SUBMITTED
+                                                </small>
+
+                                            </div>
+
+
+                                            <div
+                                                className={`progress-connector ${
+                                                    progress >= 2
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                            ></div>
+
+
+                                            {/* SHORTLISTED */}
+
+                                            <div
+                                                className={`progress-node ${
+                                                    progress >= 2
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                            >
+
+                                                <span>
+                                                    02
+                                                </span>
+
+                                                <small>
+                                                    SHORTLISTED
+                                                </small>
+
+                                            </div>
+
+
+                                            <div
+                                                className={`progress-connector ${
+                                                    progress >= 3
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                            ></div>
+
+
+                                            {/* ACCEPTED */}
+
+                                            <div
+                                                className={`progress-node ${
+                                                    progress >= 3
+                                                        ? "active"
+                                                        : ""
+                                                }`}
+                                            >
+
+                                                <span>
+                                                    03
+                                                </span>
+
+                                                <small>
+                                                    DECISION
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* REJECTED STATE */}
+
+                                        {status === "REJECTED" && (
+
+                                            <div className="rejected-message">
+
+                                                <span className="rejected-icon">
+                                                    ×
+                                                </span>
+
+                                                <div>
+
+                                                    <strong>
+                                                        APPLICATION CLOSED
+                                                    </strong>
+
+                                                    <p>
+                                                        Unfortunately, this
+                                                        application was not
+                                                        selected for the next
+                                                        stage.
+                                                    </p>
+
+                                                </div>
+
+                                            </div>
+
+                                        )}
+
+                                    </div>
+
+
+                                    {/* ACCEPTED MESSAGE */}
+
+                                    {status === "ACCEPTED" && (
+
+                                        <div className="accepted-message">
+
+                                            <div className="accepted-icon">
+                                                ✓
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    MISSION SUCCESS
+                                                </strong>
+
+                                                <p>
+                                                    Your application has been
+                                                    accepted.
+                                                </p>
+
+                                            </div>
+
+                                            <span className="success-pulse">
+                                                ●
+                                            </span>
 
                                         </div>
 
                                     )}
 
-                                </div>
 
+                                    {/* FOOTER */}
 
-                                {/* ==========================
-                                    FOOTER
-                                ========================== */}
+                                    <div className="application-footer">
 
-                                <div className="application-footer">
+                                        <span>
+                                            LEVEL UP RECRUITMENT SYSTEM
+                                        </span>
 
-                                    <span>
-                                        Application #
-                                        {application.id}
-                                    </span>
+                                        <span>
+                                            STATUS:
+                                            {" "}
+                                            {status}
+                                        </span>
 
-                                    <span>
-                                        Applied{" "}
-                                        {new Date(
-                                            application.createdAt
-                                        ).toLocaleDateString()}
-                                    </span>
+                                    </div>
 
                                 </div>
 
-                            </div>
+                            );
 
-                        );
+                        }
+                    )}
 
-                    }
-                )}
+                </div>
+
+            </div>
+
+
+            {/* ==========================
+                FOOTER
+            ========================== */}
+
+            <div className="applications-footer">
+
+                <span className="footer-line"></span>
+
+                <span>
+                    HUNTER DATABASE CONNECTED
+                </span>
+
+                <span className="footer-line"></span>
 
             </div>
 

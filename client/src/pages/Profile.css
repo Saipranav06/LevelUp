@@ -1,209 +1,729 @@
+/* =========================================================
+   HUNTER PROFILE
+========================================================= */
+
 .profile-page {
     min-height: 100vh;
-    padding: 60px 20px;
+    padding: 35px 25px 70px;
+
+    background:
+        radial-gradient(
+            circle at 50% 15%,
+            rgba(0, 119, 255, 0.08),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 85% 70%,
+            rgba(138, 43, 226, 0.08),
+            transparent 30%
+        ),
+        #05060b;
+
+    color: white;
+
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   BACKGROUND GRID
+========================================================= */
+
+.profile-page::before {
+    content: "";
+
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(22, 119, 255, 0.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(22, 119, 255, 0.035) 1px,
+            transparent 1px
+        );
+
+    background-size: 55px 55px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 90%
+        );
+
+    z-index: 0;
+}
+
+
+/* =========================================================
+   TOP STATUS
+========================================================= */
+
+.profile-top-status {
+    width: fit-content;
+
+    margin: 0 auto 20px;
+
+    padding: 8px 18px;
+
+    border: 1px solid #273b68;
+    border-radius: 30px;
+
+    background: rgba(5, 8, 18, 0.8);
+
+    color: #7da8e8;
+
+    font-size: 10px;
+    letter-spacing: 3px;
+
+    position: relative;
+    z-index: 2;
+
+    box-shadow:
+        0 0 15px rgba(0, 119, 255, 0.08);
+}
+
+.profile-top-status span {
+    margin-right: 8px;
+
+    color: #39ff88;
+
+    text-shadow:
+        0 0 8px #39ff88;
+
+    animation: statusPulse 1.5s infinite;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.profile-header {
     text-align: center;
+
+    position: relative;
+    z-index: 2;
+
+    margin-bottom: 45px;
+}
+
+.profile-kicker {
+    margin: 0 0 12px;
+
+    color: #8a2be2;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    letter-spacing: 5px;
 }
 
 .profile-title {
-    font-size: 40px;
-    letter-spacing: 4px;
-    margin-bottom: 10px;
+    margin: 0;
+
+    font-size: clamp(38px, 5vw, 58px);
+
+    font-weight: 900;
+
+    letter-spacing: 5px;
+
+    line-height: 1;
+
+    text-shadow:
+        0 0 15px rgba(255, 255, 255, 0.15),
+        0 0 35px rgba(0, 119, 255, 0.15);
 }
 
 .profile-subtitle {
-    color: #7da8e8;
-    letter-spacing: 4px;
-    margin-bottom: 40px;
+    margin: 15px 0 0;
+
+    color: #6f8fbd;
+
+    font-size: 12px;
+
+    letter-spacing: 5px;
 }
 
 
-/* ==========================
-   USER PROFILE CARD
-   ========================== */
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
 
-.profile-card {
-    width: min(700px, 100%);
-    margin: 0 auto 25px;
+.profile-container {
+    width: min(1050px, 100%);
 
-    padding: 35px 25px;
+    margin: auto;
 
-    border: 1px solid #273b68;
-    border-radius: 16px;
+    position: relative;
+    z-index: 2;
+}
 
-    background: rgba(8, 8, 18, 0.9);
+
+/* =========================================================
+   IDENTITY CARD
+========================================================= */
+
+.identity-card {
+    min-height: 230px;
+
+    display: grid;
+
+    grid-template-columns: 220px 1fr 150px;
+
+    align-items: center;
+
+    gap: 30px;
+
+    padding: 35px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border: 1px solid #21477e;
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(8, 14, 28, 0.98),
+            rgba(5, 7, 16, 0.95)
+        );
 
     box-shadow:
-        0 0 20px rgba(0, 119, 255, 0.15);
+        0 0 25px rgba(0, 119, 255, 0.12),
+        inset 0 0 40px rgba(0, 119, 255, 0.025);
 
     transition:
-        transform 0.25s ease,
-        border-color 0.25s ease,
-        box-shadow 0.25s ease;
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
-.profile-card:hover {
-    transform: translateY(-3px);
+.identity-card:hover {
+    transform: translateY(-4px);
 
     border-color: #1677ff;
 
     box-shadow:
-        0 0 25px rgba(0, 119, 255, 0.25);
+        0 0 30px rgba(0, 119, 255, 0.2),
+        0 0 60px rgba(138, 43, 226, 0.06);
+}
+
+
+/* TOP SCAN LINE */
+
+.identity-scan-line {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #1677ff,
+            #8a2be2,
+            #1677ff,
+            transparent
+        );
+
+    animation: scanLine 4s linear infinite;
+}
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+.identity-left {
+    display: flex;
+    justify-content: center;
+}
+
+.profile-avatar-wrapper {
+    width: 145px;
+    height: 145px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
 }
 
 .profile-avatar {
-    font-size: 55px;
-    margin-bottom: 15px;
+    width: 95px;
+    height: 95px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #1677ff;
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 119, 255, 0.25),
+            rgba(8, 8, 18, 0.95) 70%
+        );
+
+    font-size: 48px;
+
+    box-shadow:
+        0 0 25px rgba(0, 119, 255, 0.3),
+        inset 0 0 20px rgba(138, 43, 226, 0.15);
+
+    z-index: 2;
+}
+
+.avatar-ring {
+    position: absolute;
+
+    border-radius: 50%;
+
+    border: 1px solid;
+
+    pointer-events: none;
+}
+
+.ring-one {
+    width: 120px;
+    height: 120px;
+
+    border-color: #1677ff;
+
+    animation: rotateRing 8s linear infinite;
+}
+
+.ring-two {
+    width: 145px;
+    height: 145px;
+
+    border-color: #8a2be2;
+
+    border-style: dashed;
+
+    animation: rotateRingReverse 12s linear infinite;
+}
+
+.avatar-status {
+    position: absolute;
+
+    right: 6px;
+    bottom: 13px;
+
+    width: 20px;
+    height: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 3px solid #070912;
+    border-radius: 50%;
+
+    color: #39ff88;
+
+    font-size: 10px;
+
+    z-index: 3;
+
+    text-shadow:
+        0 0 8px #39ff88;
+}
+
+
+/* =========================================================
+   IDENTITY INFO
+========================================================= */
+
+.section-label {
+    margin: 0 0 8px;
+
+    color: #528bd5;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 4px;
 }
 
 .profile-username {
-    margin: 5px 0;
+    margin: 0 0 7px;
 
-    font-size: 28px;
+    font-size: 32px;
+
     letter-spacing: 2px;
 }
 
 .profile-email {
-    color: #8fa8c9;
-    margin: 8px 0;
+    margin: 0 0 12px;
+
+    color: #7da8e8;
+
+    font-size: 14px;
 }
 
 .profile-role {
     display: inline-block;
 
-    padding: 6px 14px;
+    padding: 6px 15px;
 
     border: 1px solid #1677ff;
     border-radius: 20px;
 
     color: #7da8e8;
 
-    font-size: 12px;
-    letter-spacing: 2px;
+    background: rgba(0, 119, 255, 0.06);
+
+    font-size: 10px;
+
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
 }
 
 .profile-bio {
-    margin-top: 20px;
-
-    color: #b7c7df;
-}
-
-
-/* ==========================
-   HUNTER CARD
-   ========================== */
-
-.hunter-profile-card {
-    width: min(700px, 100%);
-    margin: 0 auto 25px;
-
-    padding: 35px 25px;
-
-    border: 1px solid #8a2be2;
-    border-radius: 16px;
-
-    background: rgba(8, 8, 18, 0.9);
-
-    box-shadow:
-        0 0 25px rgba(138, 43, 226, 0.18);
-}
-
-.hunter-label {
-    margin: 0;
+    margin: 18px 0 0;
 
     color: #8fa8c9;
 
     font-size: 13px;
-    letter-spacing: 4px;
+
+    line-height: 1.6;
 }
 
-.hunter-rank {
-    margin: 10px 0;
 
-    font-size: 48px;
-    letter-spacing: 4px;
+/* =========================================================
+   IDENTITY STATUS
+========================================================= */
+
+.identity-status {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 8px;
+
+    text-align: right;
 }
 
-.hunter-level {
-    margin-bottom: 25px;
+.status-label {
+    color: #536887;
 
-    color: #7da8e8;
+    font-size: 9px;
 
     letter-spacing: 3px;
 }
 
+.identity-status strong {
+    color: #39ff88;
 
-/* ==========================
-   EXP
-   ========================== */
+    font-size: 12px;
 
-.hunter-exp-info {
-    width: min(550px, 100%);
-    margin: 0 auto 8px;
+    letter-spacing: 3px;
 
-    display: flex;
-    justify-content: space-between;
-
-    color: #8fa8c9;
-
-    font-size: 13px;
-    letter-spacing: 2px;
+    text-shadow:
+        0 0 10px rgba(57, 255, 136, 0.4);
 }
 
-.hunter-exp-bar {
-    width: min(550px, 100%);
-    height: 10px;
+.status-dot-large {
+    color: #39ff88;
 
-    margin: auto;
+    font-size: 9px;
+
+    text-shadow:
+        0 0 10px #39ff88;
+}
+
+
+/* =========================================================
+   HUNTER RANK CARD
+========================================================= */
+
+.hunter-rank-card {
+    margin-top: 25px;
+
+    padding: 40px 50px;
+
+    text-align: center;
+
+    position: relative;
 
     overflow: hidden;
 
-    border: 1px solid #273b68;
-    border-radius: 10px;
+    border: 1px solid #7131ae;
+    border-radius: 18px;
 
-    background: #080812;
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(138, 43, 226, 0.08),
+            transparent 50%
+        ),
+        rgba(6, 7, 16, 0.96);
+
+    box-shadow:
+        0 0 25px rgba(138, 43, 226, 0.15),
+        inset 0 0 50px rgba(138, 43, 226, 0.025);
+}
+
+
+/* RANK TOP LINE */
+
+.hunter-rank-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 20%;
+
+    width: 60%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #8a2be2,
+            #1677ff,
+            transparent
+        );
+}
+
+
+/* CORNERS */
+
+.card-corner {
+    position: absolute;
+
+    width: 14px;
+    height: 14px;
+}
+
+.top-left {
+    top: 12px;
+    left: 12px;
+
+    border-top: 1px solid #1677ff;
+    border-left: 1px solid #1677ff;
+}
+
+.top-right {
+    top: 12px;
+    right: 12px;
+
+    border-top: 1px solid #8a2be2;
+    border-right: 1px solid #8a2be2;
+}
+
+.bottom-left {
+    bottom: 12px;
+    left: 12px;
+
+    border-bottom: 1px solid #1677ff;
+    border-left: 1px solid #1677ff;
+}
+
+.bottom-right {
+    bottom: 12px;
+    right: 12px;
+
+    border-bottom: 1px solid #8a2be2;
+    border-right: 1px solid #8a2be2;
+}
+
+
+/* RANK TEXT */
+
+.rank-label {
+    margin: 0;
+
+    color: #7da8e8;
+
+    font-size: 11px;
+
+    letter-spacing: 5px;
+}
+
+.hunter-rank {
+    margin: 8px 0;
+
+    font-size: clamp(50px, 7vw, 75px);
+
+    letter-spacing: 8px;
+
+    line-height: 1;
+
+    text-shadow:
+        0 0 20px rgba(255, 255, 255, 0.08),
+        0 0 35px rgba(138, 43, 226, 0.2);
+}
+
+.hunter-level {
+    margin: 12px 0 30px;
+
+    color: #6fa8ff;
+
+    font-size: 14px;
+
+    letter-spacing: 5px;
+}
+
+
+/* =========================================================
+   EXP
+========================================================= */
+
+.hunter-exp-info {
+    width: min(750px, 100%);
+
+    margin: auto;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #8298b8;
+
+    font-size: 10px;
+
+    letter-spacing: 3px;
+}
+
+.hunter-exp-bar {
+    width: min(750px, 100%);
+
+    height: 9px;
+
+    margin: 10px auto 0;
+
+    overflow: hidden;
+
+    border: 1px solid #263e6d;
+
+    border-radius: 20px;
+
+    background: #04050a;
+
+    box-shadow:
+        inset 0 0 8px rgba(0, 0, 0, 0.8);
 }
 
 .hunter-exp-progress {
     height: 100%;
 
-    border-radius: 10px;
+    position: relative;
 
-    background: linear-gradient(
-        90deg,
-        #1677ff,
-        #8a2be2
-    );
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #1677ff,
+            #7b2cff,
+            #c05cff
+        );
+
+    box-shadow:
+        0 0 12px rgba(138, 43, 226, 0.6);
 
     transition:
-        width 0.6s ease;
+        width 1s ease;
+}
+
+.exp-glow {
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    width: 35px;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.8)
+        );
+
+    filter: blur(3px);
+
+    animation: expGlow 2s infinite;
+}
+
+.exp-next-level {
+    margin: 12px 0 0;
+
+    color: #617da5;
+
+    font-size: 9px;
+
+    letter-spacing: 3px;
 }
 
 
-/* ==========================
-   HUNTER STATS
-   ========================== */
+/* =========================================================
+   STATS
+========================================================= */
 
 .hunter-stats {
-    width: min(700px, 100%);
-    margin: 0 auto 30px;
+    margin-top: 25px;
 
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
 
-    gap: 20px;
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 16px;
 }
 
 .hunter-stat-card {
+    min-height: 155px;
+
     padding: 25px 15px;
 
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
 
-    border: 1px solid #273b68;
+    justify-content: center;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border: 1px solid #24395f;
     border-radius: 14px;
 
-    background: rgba(8, 8, 18, 0.9);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(8, 12, 24, 0.98),
+            rgba(5, 7, 15, 0.98)
+        );
 
     transition:
         transform 0.25s ease,
@@ -212,81 +732,701 @@
 }
 
 .hunter-stat-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
 
     border-color: #8a2be2;
 
     box-shadow:
-        0 0 18px rgba(138, 43, 226, 0.25);
+        0 0 25px rgba(138, 43, 226, 0.2);
 }
 
-.hunter-stat-icon {
+.hunter-stat-card::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 20%;
+
+    width: 60%;
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #1677ff,
+            transparent
+        );
+}
+
+.stat-icon {
+    margin-bottom: 12px;
+
     font-size: 28px;
-    margin-bottom: 10px;
+
+    filter:
+        drop-shadow(
+            0 0 8px rgba(0, 119, 255, 0.35)
+        );
 }
 
-.hunter-stat-label {
-    color: #8fa8c9;
+.stat-label {
+    color: #6f87aa;
 
-    font-size: 11px;
-    letter-spacing: 2px;
+    font-size: 9px;
+
+    letter-spacing: 3px;
 }
 
-.hunter-stat-value {
+.stat-value {
     margin-top: 8px;
 
-    font-size: 30px;
-    font-weight: bold;
+    font-size: 31px;
+
+    letter-spacing: 2px;
+}
+
+.stat-rank {
+    font-size: 24px;
+}
+
+.stat-line {
+    width: 35px;
+
+    height: 2px;
+
+    margin-top: 10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #1677ff,
+            #8a2be2
+        );
+
+    box-shadow:
+        0 0 8px rgba(0, 119, 255, 0.4);
 }
 
 
-/* ==========================
-   SYSTEM STATUS
-   ========================== */
+/* =========================================================
+   LOWER GRID
+========================================================= */
+
+.profile-lower-grid {
+    margin-top: 25px;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 20px;
+}
+
+
+/* =========================================================
+   LOWER CARDS
+========================================================= */
+
+.attributes-card,
+.system-card {
+    padding: 28px;
+
+    border: 1px solid #233b65;
+    border-radius: 16px;
+
+    background:
+        rgba(6, 8, 17, 0.96);
+
+    box-shadow:
+        inset 0 0 30px rgba(0, 119, 255, 0.02);
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.attributes-card:hover,
+.system-card:hover {
+    border-color: #315b96;
+
+    box-shadow:
+        0 0 20px rgba(0, 119, 255, 0.1);
+}
+
+.card-heading {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 30px;
+}
+
+.card-heading h2 {
+    margin: 0;
+
+    font-size: 18px;
+
+    letter-spacing: 2px;
+}
+
+.heading-icon {
+    color: #1677ff;
+
+    font-size: 25px;
+
+    text-shadow:
+        0 0 12px rgba(0, 119, 255, 0.5);
+}
+
+
+/* =========================================================
+   ATTRIBUTES
+========================================================= */
+
+.attribute {
+    margin-bottom: 22px;
+}
+
+.attribute:last-child {
+    margin-bottom: 0;
+}
+
+.attribute-info {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin-bottom: 8px;
+
+    color: #7e95b7;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+}
+
+.attribute-info strong {
+    color: #b8d2ff;
+}
+
+.attribute-bar {
+    height: 6px;
+
+    overflow: hidden;
+
+    border: 1px solid #20385e;
+    border-radius: 10px;
+
+    background: #04050a;
+}
+
+.attribute-bar span {
+    display: block;
+
+    height: 100%;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #1677ff,
+            #8a2be2
+        );
+
+    box-shadow:
+        0 0 10px rgba(0, 119, 255, 0.4);
+
+    transition:
+        width 1s ease;
+}
+
+
+/* =========================================================
+   SYSTEM
+========================================================= */
+
+.system-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid #182945;
+
+    color: #7189ae;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+}
+
+.system-row strong {
+    color: #39ff88;
+
+    font-size: 9px;
+
+    letter-spacing: 2px;
+
+    text-shadow:
+        0 0 8px rgba(57, 255, 136, 0.3);
+}
+
+.system-terminal {
+    margin-top: 18px;
+
+    padding: 12px 14px;
+
+    border: 1px solid #1c3355;
+
+    background: rgba(0, 119, 255, 0.025);
+
+    color: #557ba9;
+
+    font-family: monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+}
+
+.system-terminal > span:first-child {
+    margin-right: 8px;
+
+    color: #1677ff;
+}
+
+.terminal-cursor {
+    color: #39ff88;
+
+    animation: blink 1s infinite;
+}
+
+
+/* =========================================================
+   FOOTER STATUS
+========================================================= */
 
 .profile-status {
-    width: min(700px, 100%);
+    margin-top: 30px;
 
-    margin: 0 auto;
+    padding: 15px;
 
-    color: #7da8e8;
+    text-align: center;
 
-    font-size: 13px;
-    letter-spacing: 2px;
+    color: #6283b3;
+
+    font-size: 10px;
+
+    letter-spacing: 3px;
 }
 
 .status-dot {
     margin-right: 8px;
 
-    color: #4cff88;
+    color: #39ff88;
+
+    text-shadow:
+        0 0 10px #39ff88;
+}
+
+.status-divider {
+    margin: 0 12px;
+
+    color: #394c6a;
 }
 
 
-/* ==========================
-   MOBILE
-   ========================== */
+/* =========================================================
+   LOADING
+========================================================= */
 
-@media (max-width: 700px) {
+.profile-loading-card {
+    width: min(600px, 100%);
+
+    margin: 80px auto;
+
+    padding: 55px 30px;
+
+    text-align: center;
+
+    border: 1px solid #21477e;
+    border-radius: 18px;
+
+    background: rgba(6, 8, 17, 0.95);
+
+    box-shadow:
+        0 0 30px rgba(0, 119, 255, 0.12);
+}
+
+.loading-core {
+    width: 90px;
+    height: 90px;
+
+    margin: 0 auto 25px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #1677ff;
+
+    border-radius: 50%;
+
+    color: #8fc1ff;
+
+    font-size: 25px;
+
+    box-shadow:
+        0 0 30px rgba(0, 119, 255, 0.3);
+
+    animation:
+        loadingPulse 1.5s infinite;
+}
+
+.profile-loading-card h2 {
+    font-size: 18px;
+
+    letter-spacing: 3px;
+}
+
+.profile-loading-card p {
+    color: #6f87aa;
+
+    font-size: 12px;
+}
+
+.loading-line {
+    width: 220px;
+    height: 3px;
+
+    margin: 25px auto 0;
+
+    overflow: hidden;
+
+    background: #111b2d;
+}
+
+.loading-line span {
+    display: block;
+
+    width: 40%;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #1677ff,
+            #8a2be2
+        );
+
+    animation:
+        loadingBar 1.2s infinite;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.profile-error-card {
+    width: min(600px, 100%);
+
+    margin: 80px auto;
+
+    padding: 45px 30px;
+
+    text-align: center;
+
+    border: 1px solid #702c46;
+    border-radius: 18px;
+
+    background: rgba(30, 7, 15, 0.8);
+
+    box-shadow:
+        0 0 25px rgba(255, 40, 90, 0.08);
+}
+
+.error-icon {
+    width: 55px;
+    height: 55px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #ff416c;
+    border-radius: 50%;
+
+    color: #ff416c;
+
+    font-size: 25px;
+}
+
+.error-label {
+    color: #ff416c;
+
+    font-size: 10px;
+
+    letter-spacing: 4px;
+}
+
+.profile-error-card h2 {
+    font-size: 18px;
+
+    letter-spacing: 2px;
+}
+
+.profile-error-card > p:last-child {
+    color: #9c7180;
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes rotateRing {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotateRingReverse {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes statusPulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@keyframes scanLine {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes expGlow {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes blink {
+    0%,
+    45% {
+        opacity: 1;
+    }
+
+    46%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes loadingPulse {
+    0%,
+    100% {
+        transform: scale(1);
+
+        box-shadow:
+            0 0 20px rgba(0, 119, 255, 0.2);
+    }
+
+    50% {
+        transform: scale(1.06);
+
+        box-shadow:
+            0 0 40px rgba(0, 119, 255, 0.45);
+    }
+}
+
+@keyframes loadingBar {
+    0% {
+        transform: translateX(-150%);
+    }
+
+    100% {
+        transform: translateX(400%);
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .identity-card {
+        grid-template-columns: 150px 1fr;
+    }
+
+    .identity-status {
+        display: none;
+    }
+
+    .hunter-stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .profile-lower-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .profile-page {
+        padding: 25px 15px 50px;
+    }
 
     .profile-title {
-        font-size: 28px;
+        font-size: 31px;
+
+        letter-spacing: 3px;
     }
+
+    .profile-subtitle {
+        font-size: 9px;
+
+        letter-spacing: 3px;
+    }
+
+    .profile-kicker {
+        font-size: 8px;
+
+        letter-spacing: 3px;
+    }
+
+    .identity-card {
+        grid-template-columns: 1fr;
+
+        text-align: center;
+
+        padding: 30px 20px;
+    }
+
+    .identity-left {
+        margin-bottom: 5px;
+    }
+
+    .profile-bio {
+        max-width: 400px;
+
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hunter-rank-card {
+        padding: 35px 20px;
+    }
+
+    .hunter-rank {
+        font-size: 48px;
+
+        letter-spacing: 5px;
+    }
+
+    .hunter-stats {
+        grid-template-columns: 1fr 1fr;
+
+        gap: 12px;
+    }
+
+    .hunter-stat-card {
+        min-height: 135px;
+    }
+
+    .stat-value {
+        font-size: 26px;
+    }
+
+    .stat-label {
+        font-size: 8px;
+    }
+
+    .profile-lower-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attributes-card,
+    .system-card {
+        padding: 22px 18px;
+    }
+
+    .profile-status {
+        font-size: 8px;
+
+        line-height: 2;
+    }
+
+    .status-divider {
+        margin: 0 6px;
+    }
+}
+
+
+@media (max-width: 400px) {
 
     .hunter-stats {
         grid-template-columns: 1fr;
     }
 
-    .hunter-rank {
-        font-size: 38px;
+    .hunter-stat-card {
+        min-height: 120px;
     }
 
-}
-.exp-next-level {
-    margin-top: 15px;
-
-    color: #8fa8c9;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
+    .profile-avatar-wrapper {
+        transform: scale(0.9);
+    }
 }
