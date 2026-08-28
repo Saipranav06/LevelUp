@@ -2513,3 +2513,30 @@
     }
 
 }
+/* =========================================
+   MATCH SCORE
+========================================= */
+
+.match-score {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 75px;
+    margin-right: 18px;
+}
+
+.match-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #8b8b99;
+    margin-bottom: 3px;
+}
+
+.match-percentage {
+    font-size: 20px;
+    font-weight: 800;
+    color: #a78bfa;
+    text-shadow:
+        0 0 12px rgba(167, 139, 250, 0.45);
+}

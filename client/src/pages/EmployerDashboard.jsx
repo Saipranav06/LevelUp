@@ -24,8 +24,54 @@ function EmployerDashboard() {
         description: "",
         experience: "",
         salary: "",
-        location: ""
+        location: "",
+        skills: []
     });
+
+    const [skills, setSkills] = useState([]);
+
+    const fetchSkills = async () => {
+
+    try {
+
+        const token =
+            localStorage.getItem("token");
+
+        const response =
+            await api.get(
+                "/skills",
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        console.log(
+            "SKILLS API RESPONSE:",
+            response.data
+        );
+
+        console.log(
+            "SKILLS ARRAY:",
+            response.data.skills
+        );
+
+        setSkills(
+            response.data.skills || []
+        );
+
+    } catch (error) {
+
+        console.error(
+            "FAILED TO FETCH SKILLS:",
+            error.response?.data || error
+        );
+
+    }
+
+};
 
     const token = localStorage.getItem("token");
 
@@ -136,6 +182,7 @@ function EmployerDashboard() {
     useEffect(() => {
 
         loadData();
+        fetchSkills();
 
     }, []);
 
@@ -164,102 +211,121 @@ function EmployerDashboard() {
 
     const createJob = async (e) => {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        setJobError("");
-        setJobMessage("");
+    setJobError("");
+    setJobMessage("");
 
-        if (
-            !newJob.title.trim() ||
-            !newJob.description.trim() ||
-            newJob.experience === "" ||
-            !newJob.salary.trim() ||
-            !newJob.location.trim()
-        ) {
+    if (
+        !newJob.title.trim() ||
+        !newJob.description.trim() ||
+        newJob.experience === "" ||
+        !newJob.salary.trim() ||
+        !newJob.location.trim()
+    ) {
 
-            setJobError(
-                "All job fields are required."
+        setJobError(
+            "All job fields are required."
+        );
+
+        return;
+    }
+
+    try {
+
+        setCreatingJob(true);
+
+        const response =
+            await api.post(
+                "/jobs",
+                {
+                    title:
+                        newJob.title.trim(),
+
+                    description:
+                        newJob.description.trim(),
+
+                    experience:
+                        Number(newJob.experience),
+
+                    salary:
+                        newJob.salary.trim(),
+
+                    location:
+                        newJob.location.trim(),
+
+                    // ==========================
+                    // REQUIRED SKILLS
+                    // ==========================
+
+                    skills:
+                        newJob.skills || []
+                },
+                config
             );
 
-            return;
-        }
 
-        try {
+        const createdJob =
+            response.data.job;
 
-            setCreatingJob(true);
 
-            const response =
-                await api.post(
-                    "/jobs",
-                    {
-                        title:
-                            newJob.title.trim(),
+        /*
+         * Immediately add the newly created
+         * job to the dashboard.
+         */
 
-                        description:
-                            newJob.description.trim(),
+        setJobs((previous) => [
+            createdJob,
+            ...previous
+        ]);
 
-                        experience:
-                            Number(newJob.experience),
 
-                        salary:
-                            newJob.salary.trim(),
+        // ==========================
+        // RESET FORM
+        // ==========================
 
-                        location:
-                            newJob.location.trim()
-                    },
-                    config
-                );
+        setNewJob({
+            title: "",
+            description: "",
+            experience: "",
+            salary: "",
+            location: "",
+            skills: []
+        });
 
-            const createdJob =
-                response.data.job;
 
-            /*
-             * Immediately add the newly created
-             * job to the dashboard.
-             */
+        setJobMessage(
+            "POSITION CREATED SUCCESSFULLY"
+        );
 
-            setJobs((previous) => [
-                createdJob,
-                ...previous
-            ]);
 
-            setNewJob({
-                title: "",
-                description: "",
-                experience: "",
-                salary: "",
-                location: ""
-            });
+        setTimeout(() => {
 
-            setJobMessage(
-                "POSITION CREATED SUCCESSFULLY"
-            );
+            setShowAddJob(false);
+            setJobMessage("");
 
-            setTimeout(() => {
+        }, 900);
 
-                setShowAddJob(false);
-                setJobMessage("");
 
-            }, 900);
+    } catch (error) {
 
-        } catch (error) {
+        console.error(
+            "Create job error:",
+            error
+        );
 
-            console.error(
-                "Create job error:",
-                error
-            );
+        setJobError(
+            error.response?.data?.message ||
+            "Failed to create job."
+        );
 
-            setJobError(
-                error.response?.data?.message ||
-                "Failed to create job."
-            );
+    } finally {
 
-        } finally {
+        setCreatingJob(false);
 
-            setCreatingJob(false);
+    }
 
-        }
-    };
+};
 
 
     // =========================================================
@@ -1217,6 +1283,50 @@ function EmployerDashboard() {
 
                             </div>
 
+                            <div className="form-field">
+
+    <label>
+        REQUIRED SKILLS
+    </label>
+
+    <select
+        multiple
+        value={newJob.skills}
+        onChange={(e) => {
+
+            const selectedSkills =
+                Array.from(
+                    e.target.selectedOptions,
+                    option => Number(option.value)
+                );
+
+            setNewJob({
+                ...newJob,
+                skills: selectedSkills
+            });
+
+        }}
+    >
+
+        {skills.map((skill) => (
+
+    <option
+        key={skill.id}
+        value={skill.id}
+    >
+        {skill.name}
+    </option>
+
+))}
+
+    </select>
+
+    <small>
+        HOLD CTRL TO SELECT MULTIPLE SKILLS
+    </small>
+
+</div>
+
 
                             {jobError && (
 
@@ -1405,6 +1515,17 @@ function EmployerDashboard() {
 
                                                 </div>
 
+                                                <div className="match-score">
+
+    <span className="match-label">
+        MATCH
+    </span>
+
+    <span className="match-percentage">
+        {application.matchPercentage ?? 0}%
+    </span>
+
+</div>
 
                                                 <div className="hunter-info">
 

@@ -462,7 +462,8 @@ app.post(
                 description,
                 experience,
                 salary,
-                location
+                location,
+                skills
             } = req.body;
 
 
@@ -475,12 +476,13 @@ app.post(
                 !description ||
                 experience === undefined ||
                 !salary ||
-                !location
+                !location ||
+                !Array.isArray(skills)
             ) {
 
                 return res.status(400).json({
                     message:
-                        "All job fields are required"
+                        "All job fields and skills are required"
                 });
 
             }
@@ -491,32 +493,51 @@ app.post(
             // ==========================
 
             const job =
-                await prisma.job.create({
+    await prisma.job.create({
 
-                    data: {
+        data: {
 
-                        title:
-                            title,
+            title:
+                title,
 
-                        description:
-                            description,
+            description:
+                description,
 
-                        experience:
-                            Number(experience),
+            experience:
+                Number(experience),
 
-                        salary:
-                            salary,
+            salary:
+                salary,
 
-                        location:
-                            location,
+            location:
+                location,
 
-                        // Logged-in employer
-                        employerId:
-                            req.user.id
+            employerId:
+                req.user.id,
 
+            skills: {
+                create: skills.map((skillId) => ({
+                    skill: {
+                        connect: {
+                            id: Number(skillId)
+                        }
                     }
+                }))
+            }
 
-                });
+        },
+
+        include: {
+
+            skills: {
+                include: {
+                    skill: true
+                }
+            }
+
+        }
+
+    });
 
 
             // ==========================
@@ -611,6 +632,52 @@ app.get(
 
                 message:
                     "Failed to fetch jobs"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
+// Get All Skills API
+// ==========================
+
+app.get(
+    "/api/skills",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const skills =
+                await prisma.skill.findMany({
+
+                    orderBy: {
+                        name: "asc"
+                    }
+
+                });
+
+            res.json({
+
+                skills: skills
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get skills error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch skills"
 
             });
 
@@ -866,6 +933,20 @@ app.get(
 
                                 skillsCount: true,
 
+                                // ==========================
+                                // APPLICANT SKILLS
+                                // ==========================
+
+                                skills: {
+
+                                    include: {
+
+                                        skill: true
+
+                                    }
+
+                                },
+
                                 resumeAnalysis: true
 
                             }
@@ -884,7 +965,21 @@ app.get(
 
                                 salary: true,
 
-                                experience: true
+                                experience: true,
+
+                                // ==========================
+                                // REQUIRED JOB SKILLS
+                                // ==========================
+
+                                skills: {
+
+                                    include: {
+
+                                        skill: true
+
+                                    }
+
+                                }
 
                             }
 
@@ -901,12 +996,107 @@ app.get(
                 });
 
 
+            // =====================================================
+            // CALCULATE MATCH PERCENTAGE
+            // =====================================================
+
+            const applicationsWithMatch =
+                applications.map((application) => {
+
+                    console.log(
+    "========== MATCH DEBUG =========="
+);
+
+console.log(
+    "Applicant:",
+    application.applicant.username
+);
+
+console.log(
+    "Applicant Skills:",
+    application.applicant.skills
+);
+
+console.log(
+    "Job:",
+    application.job.title
+);
+
+console.log(
+    "Job Skills:",
+    application.job.skills
+);
+
+console.log(
+    "================================="
+);
+
+                    // Applicant's Skill IDs
+
+                    const applicantSkillIds =
+                        application.applicant.skills.map(
+                            (userSkill) =>
+                                userSkill.skillId
+                        );
+
+
+                    // Job's Required Skill IDs
+
+                    const requiredSkillIds =
+                        application.job.skills.map(
+                            (jobSkill) =>
+                                jobSkill.skillId
+                        );
+
+
+                    // Find Matching Skills
+
+                    const matchedSkills =
+                        requiredSkillIds.filter(
+                            (skillId) =>
+                                applicantSkillIds.includes(
+                                    skillId
+                                )
+                        );
+
+
+                    // Calculate Percentage
+
+                    const matchPercentage =
+                        requiredSkillIds.length > 0
+                            ? Math.round(
+                                (
+                                    matchedSkills.length /
+                                    requiredSkillIds.length
+                                ) * 100
+                            )
+                            : 0;
+
+
+                    return {
+
+                        ...application,
+
+                        matchPercentage:
+
+                            matchPercentage
+
+                    };
+
+                });
+
+
+            // =====================================================
+            // SEND RESPONSE
+            // =====================================================
+
             res.json({
 
                 applications:
-                    applications
+                    applicationsWithMatch
 
             });
+
 
         } catch (error) {
 
@@ -914,6 +1104,7 @@ app.get(
                 "Get employer applications error:",
                 error
             );
+
 
             res.status(500).json({
 
@@ -2156,6 +2347,66 @@ ${resumeText}
                 });
 
             }
+
+            // ==========================
+// Save Applicant Skills
+// ==========================
+
+if (Array.isArray(analysis.skills)) {
+
+    for (const skillName of analysis.skills) {
+
+        const cleanSkillName =
+            String(skillName).trim();
+
+        if (!cleanSkillName) {
+            continue;
+        }
+
+        // Find skill in Skill table
+        const skill =
+            await prisma.skill.findFirst({
+                where: {
+                    name: {
+                        equals: cleanSkillName,
+                        mode: "insensitive"
+                    }
+                }
+            });
+
+        // Only create UserSkill if skill exists
+        if (skill) {
+
+            await prisma.userSkill.upsert({
+
+                where: {
+                    userId_skillId: {
+                        userId: req.user.id,
+                        skillId: skill.id
+                    }
+                },
+
+                update: {},
+
+                create: {
+                    userId: req.user.id,
+                    skillId: skill.id
+                }
+
+            });
+
+        } else {
+
+            console.log(
+                "Skill not found in Skill table:",
+                cleanSkillName
+            );
+
+        }
+
+    }
+
+}
 
 
             // ==========================
