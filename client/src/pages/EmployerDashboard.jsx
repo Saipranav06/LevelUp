@@ -1,111 +1,303 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../services/api";
 import "./EmployerDashboard.css";
 
 function EmployerDashboard() {
+
     const [jobs, setJobs] = useState([]);
     const [applications, setApplications] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     const [selectedJob, setSelectedJob] = useState(null);
     const [updatingId, setUpdatingId] = useState(null);
 
+    // ADD JOB
+    const [showAddJob, setShowAddJob] = useState(false);
+    const [creatingJob, setCreatingJob] = useState(false);
+    const [jobMessage, setJobMessage] = useState("");
+    const [jobError, setJobError] = useState("");
+
+    const [newJob, setNewJob] = useState({
+        title: "",
+        description: "",
+        experience: "",
+        salary: "",
+        location: ""
+    });
+
     const token = localStorage.getItem("token");
 
-    // ==========================
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    };
+
+
+    // =========================================================
     // LOAD EMPLOYER DATA
-    // ==========================
+    // =========================================================
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                setLoading(true);
-                setError("");
+    const loadData = async () => {
 
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                };
+        try {
 
-                const jobsResponse = await api.get(
+            setLoading(true);
+            setError("");
+
+            const jobsResponse =
+                await api.get(
                     "/jobs",
                     config
                 );
 
-                const applicationsResponse =
-                    await api.get(
-                        "/employer/applications",
-                        config
+            const applicationsResponse =
+                await api.get(
+                    "/employer/applications",
+                    config
+                );
+
+            /*
+             * /jobs currently returns all jobs.
+             * We only display jobs that belong to the
+             * currently logged-in employer.
+             *
+             * The JWT contains the employer id.
+             */
+
+            let currentUserId = null;
+
+            try {
+
+                const payload =
+                    JSON.parse(
+                        atob(
+                            token
+                                .split(".")[1]
+                                .replace(/-/g, "+")
+                                .replace(/_/g, "/")
+                        )
                     );
 
-                setJobs(
-                    jobsResponse.data.jobs || []
-                );
+                currentUserId =
+                    Number(payload.id);
 
-                setApplications(
-                    applicationsResponse.data.applications || []
-                );
+            } catch (decodeError) {
 
-            } catch (error) {
                 console.error(
-                    "Employer dashboard error:",
-                    error
+                    "Token decode error:",
+                    decodeError
                 );
 
-                setError(
-                    error.response?.data?.message ||
-                    "Failed to load employer dashboard"
-                );
-            } finally {
-                setLoading(false);
             }
-        };
+
+            const allJobs =
+                jobsResponse.data.jobs || [];
+
+            const ownJobs =
+                currentUserId
+                    ? allJobs.filter(
+                          (job) =>
+                              Number(
+                                  job.employerId ??
+                                  job.employer?.id
+                              ) === currentUserId
+                      )
+                    : [];
+
+            setJobs(ownJobs);
+
+            setApplications(
+                applicationsResponse.data.applications || []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Employer dashboard error:",
+                error
+            );
+
+            setError(
+                error.response?.data?.message ||
+                "Failed to load employer dashboard"
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
+
+
+    useEffect(() => {
 
         loadData();
-    }, [token]);
 
-    // ==========================
+    }, []);
+
+
+    // =========================================================
+    // ADD JOB
+    // =========================================================
+
+    const handleJobChange = (e) => {
+
+        const {
+            name,
+            value
+        } = e.target;
+
+        setNewJob((previous) => ({
+            ...previous,
+            [name]: value
+        }));
+
+        setJobError("");
+        setJobMessage("");
+
+    };
+
+
+    const createJob = async (e) => {
+
+        e.preventDefault();
+
+        setJobError("");
+        setJobMessage("");
+
+        if (
+            !newJob.title.trim() ||
+            !newJob.description.trim() ||
+            newJob.experience === "" ||
+            !newJob.salary.trim() ||
+            !newJob.location.trim()
+        ) {
+
+            setJobError(
+                "All job fields are required."
+            );
+
+            return;
+        }
+
+        try {
+
+            setCreatingJob(true);
+
+            const response =
+                await api.post(
+                    "/jobs",
+                    {
+                        title:
+                            newJob.title.trim(),
+
+                        description:
+                            newJob.description.trim(),
+
+                        experience:
+                            Number(newJob.experience),
+
+                        salary:
+                            newJob.salary.trim(),
+
+                        location:
+                            newJob.location.trim()
+                    },
+                    config
+                );
+
+            const createdJob =
+                response.data.job;
+
+            /*
+             * Immediately add the newly created
+             * job to the dashboard.
+             */
+
+            setJobs((previous) => [
+                createdJob,
+                ...previous
+            ]);
+
+            setNewJob({
+                title: "",
+                description: "",
+                experience: "",
+                salary: "",
+                location: ""
+            });
+
+            setJobMessage(
+                "POSITION CREATED SUCCESSFULLY"
+            );
+
+            setTimeout(() => {
+
+                setShowAddJob(false);
+                setJobMessage("");
+
+            }, 900);
+
+        } catch (error) {
+
+            console.error(
+                "Create job error:",
+                error
+            );
+
+            setJobError(
+                error.response?.data?.message ||
+                "Failed to create job."
+            );
+
+        } finally {
+
+            setCreatingJob(false);
+
+        }
+    };
+
+
+    // =========================================================
     // UPDATE APPLICATION STATUS
-    // ==========================
+    // =========================================================
 
     const updateStatus = async (
         applicationId,
         status
     ) => {
+
         try {
+
             setUpdatingId(applicationId);
 
-            const response = await api.put(
+            await api.put(
                 `/applications/${applicationId}/status`,
                 {
-                    status: status,
+                    status
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-
-            console.log(
-                "Updated application:",
-                response.data
+                config
             );
 
             setApplications((previous) =>
-                previous.map((application) =>
-                    application.id === applicationId
-                        ? {
-                              ...application,
-                              status: status,
-                          }
-                        : application
+                previous.map(
+                    (application) =>
+                        application.id ===
+                        applicationId
+                            ? {
+                                  ...application,
+                                  status
+                              }
+                            : application
                 )
             );
 
         } catch (error) {
+
             console.error(
                 "Status update error:",
                 error
@@ -115,14 +307,18 @@ function EmployerDashboard() {
                 error.response?.data?.message ||
                 "Failed to update application status"
             );
+
         } finally {
+
             setUpdatingId(null);
+
         }
     };
 
-    // ==========================
+
+    // =========================================================
     // SELECTED JOB APPLICATIONS
-    // ==========================
+    // =========================================================
 
     const selectedApplications =
         selectedJob
@@ -133,37 +329,77 @@ function EmployerDashboard() {
               )
             : [];
 
-    // ==========================
+
+    // =========================================================
     // STATISTICS
-    // ==========================
+    // =========================================================
 
     const shortlistedCount =
         applications.filter(
             (application) =>
-                application.status === "SHORTLISTED"
+                application.status ===
+                "SHORTLISTED"
         ).length;
 
     const acceptedCount =
         applications.filter(
             (application) =>
-                application.status === "ACCEPTED"
+                application.status ===
+                "ACCEPTED"
         ).length;
 
-    // ==========================
+    const pendingCount =
+        applications.filter(
+            (application) =>
+                application.status ===
+                "APPLIED"
+        ).length;
+
+
+    const totalApplicants =
+        applications.length;
+
+
+    // =========================================================
+    // JOB APPLICATION COUNTS
+    // =========================================================
+
+    const applicationCountMap =
+        useMemo(() => {
+
+            const map = {};
+
+            applications.forEach(
+                (application) => {
+
+                    map[application.jobId] =
+                        (map[application.jobId] || 0) + 1;
+
+                }
+            );
+
+            return map;
+
+        }, [applications]);
+
+
+    // =========================================================
     // LOADING
-    // ==========================
+    // =========================================================
 
     if (loading) {
+
         return (
+
             <div className="employer-page">
 
-                <div className="employer-top-line"></div>
+                <div className="employer-background-grid"></div>
 
                 <div className="employer-header">
 
                     <div className="system-chip">
                         <span className="system-dot"></span>
-                        EMPLOYER SYSTEM // ONLINE
+                        EMPLOYER SYSTEM // CONNECTING
                     </div>
 
                     <h1>
@@ -172,7 +408,7 @@ function EmployerDashboard() {
                     </h1>
 
                     <p>
-                        RECRUITMENT INTELLIGENCE SYSTEM
+                        RECRUITMENT INTELLIGENCE // TALENT ACQUISITION
                     </p>
 
                 </div>
@@ -180,50 +416,44 @@ function EmployerDashboard() {
                 <div className="employer-loading">
 
                     <div className="loading-core">
+
                         <div className="loading-ring ring-one"></div>
                         <div className="loading-ring ring-two"></div>
                         <div className="loading-ring ring-three"></div>
-                        <span>AI</span>
+
+                        <span>
+                            ◈
+                        </span>
+
                     </div>
 
                     <h2>
-                        INITIALIZING EMPLOYER SYSTEM
+                        CONNECTING TO RECRUITMENT NETWORK
                     </h2>
 
                     <p>
-                        Connecting to recruitment database...
+                        Loading employer data...
                     </p>
 
                 </div>
 
             </div>
+
         );
     }
 
-    // ==========================
+
+    // =========================================================
     // ERROR
-    // ==========================
+    // =========================================================
 
     if (error) {
+
         return (
+
             <div className="employer-page">
 
-                <div className="employer-header">
-
-                    <div className="system-chip danger">
-                        SYSTEM // ERROR
-                    </div>
-
-                    <h1>
-                        EMPLOYER
-                        <span> COMMAND CENTER</span>
-                    </h1>
-
-                    <p>
-                        RECRUITMENT INTELLIGENCE SYSTEM
-                    </p>
-
-                </div>
+                <div className="employer-background-grid"></div>
 
                 <div className="employer-error">
 
@@ -239,28 +469,40 @@ function EmployerDashboard() {
                         {error}
                     </p>
 
+                    <button
+                        className="retry-button"
+                        onClick={loadData}
+                    >
+                        RETRY CONNECTION
+                    </button>
+
                 </div>
 
             </div>
+
         );
     }
 
-    // ==========================
-    // DASHBOARD
-    // ==========================
+
+    // =========================================================
+    // MAIN DASHBOARD
+    // =========================================================
 
     return (
+
         <div className="employer-page">
 
-            {/* TOP DECORATION */}
+            <div className="employer-background-grid"></div>
 
-            <div className="employer-top-line"></div>
+            <div className="employer-glow glow-blue"></div>
+            <div className="employer-glow glow-purple"></div>
 
-            {/* ==========================
+
+            {/* =================================================
                 HEADER
-            ========================== */}
+            ================================================= */}
 
-            <div className="employer-header">
+            <header className="employer-header">
 
                 <div className="system-chip">
 
@@ -279,38 +521,97 @@ function EmployerDashboard() {
                     RECRUITMENT INTELLIGENCE // TALENT ACQUISITION
                 </p>
 
-            </div>
+            </header>
 
 
-            {/* ==========================
-                SYSTEM STATUS
-            ========================== */}
+            {/* =================================================
+                STATUS BAR
+            ================================================= */}
 
             <div className="employer-status-bar">
 
                 <div>
+
                     <span className="status-light"></span>
+
                     AI CORE ACTIVE
+
                 </div>
 
                 <div>
+
                     RECRUITMENT NETWORK
-                    <strong> CONNECTED</strong>
+
+                    <strong>
+                        CONNECTED
+                    </strong>
+
                 </div>
 
                 <div>
+
                     SYSTEM STATUS
-                    <strong> OPTIMAL</strong>
+
+                    <strong>
+                        OPTIMAL
+                    </strong>
+
                 </div>
 
             </div>
 
 
-            {/* ==========================
-                SUMMARY
-            ========================== */}
+            {/* =================================================
+                QUICK ACTION
+            ================================================= */}
 
-            <div className="employer-summary">
+            <section className="employer-command-bar">
+
+                <div>
+
+                    <span>
+                        COMMAND // 01
+                    </span>
+
+                    <h2>
+                        READY FOR YOUR NEXT HIRE?
+                    </h2>
+
+                    <p>
+                        Deploy a new position and begin receiving hunter applications.
+                    </p>
+
+                </div>
+
+                <button
+                    className="create-job-button"
+                    onClick={() => {
+                        setShowAddJob(true);
+                        setJobError("");
+                        setJobMessage("");
+                    }}
+                >
+
+                    <span className="create-plus">
+                        +
+                    </span>
+
+                    CREATE NEW JOB
+
+                    <span>
+                        →
+                    </span>
+
+                </button>
+
+            </section>
+
+
+            {/* =================================================
+                SUMMARY
+            ================================================= */}
+
+            <section className="employer-summary">
 
                 <div className="employer-summary-card blue">
 
@@ -350,7 +651,7 @@ function EmployerDashboard() {
                         </small>
 
                         <strong>
-                            {applications.length}
+                            {totalApplicants}
                         </strong>
 
                         <span>
@@ -411,14 +712,14 @@ function EmployerDashboard() {
 
                 </div>
 
-            </div>
+            </section>
 
 
-            {/* ==========================
-                JOB SECTION
-            ========================== */}
+            {/* =================================================
+                RECRUITMENT OPERATIONS
+            ================================================= */}
 
-            <div className="employer-section">
+            <section className="employer-section">
 
                 <div className="section-heading">
 
@@ -453,9 +754,9 @@ function EmployerDashboard() {
                 </div>
 
 
-                {/* ==========================
+                {/* =================================================
                     JOBS
-                ========================== */}
+                ================================================= */}
 
                 {jobs.length === 0 ? (
 
@@ -465,13 +766,26 @@ function EmployerDashboard() {
                             ◇
                         </div>
 
-                        <h3>
+                        <div className="empty-code">
                             NO ACTIVE POSITIONS
+                        </div>
+
+                        <h3>
+                            YOUR RECRUITMENT GRID IS EMPTY
                         </h3>
 
                         <p>
-                            Create a job to begin receiving hunter applications.
+                            Create your first job position to begin receiving hunter applications.
                         </p>
+
+                        <button
+                            className="empty-create-button"
+                            onClick={() =>
+                                setShowAddJob(true)
+                            }
+                        >
+                            + CREATE FIRST POSITION
+                        </button>
 
                     </div>
 
@@ -479,123 +793,485 @@ function EmployerDashboard() {
 
                     <div className="employer-jobs">
 
-                        {jobs.map((job, index) => {
+                        {jobs.map(
+                            (job, index) => {
 
-                            const jobApplications =
-                                applications.filter(
-                                    (application) =>
-                                        application.jobId ===
+                                const count =
+                                    applicationCountMap[
                                         job.id
-                                );
+                                    ] || 0;
 
-                            return (
+                                return (
 
-                                <div
-                                    className="employer-job-card"
-                                    key={job.id}
-                                >
-
-                                    {/* CARD NUMBER */}
-
-                                    <div className="job-index">
-                                        0{index + 1}
-                                    </div>
-
-
-                                    {/* JOB MAIN */}
-
-                                    <div className="employer-job-main">
-
-                                        <div className="job-icon-box">
-                                            <span>
-                                                ◈
-                                            </span>
-                                        </div>
-
-                                        <div>
-
-                                            <div className="job-module">
-                                                POSITION // ACTIVE
-                                            </div>
-
-                                            <h3>
-                                                {job.title}
-                                            </h3>
-
-                                            <p className="job-company">
-                                                RECRUITMENT TARGET
-                                            </p>
-
-                                            <div className="job-meta">
-
-                                                <span>
-                                                    ◉ {job.location}
-                                                </span>
-
-                                                <span>
-                                                    ◇ {job.salary}
-                                                </span>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-
-                                    {/* APPLICANTS */}
-
-                                    <div className="job-applicant-count">
-
-                                        <span>
-                                            APPLICANTS
-                                        </span>
-
-                                        <strong>
-                                            {jobApplications.length}
-                                        </strong>
-
-                                        <small>
-                                            CANDIDATE SIGNALS
-                                        </small>
-
-                                    </div>
-
-
-                                    {/* ACTION */}
-
-                                    <button
-                                        className="view-applicants-button"
-                                        onClick={() =>
-                                            setSelectedJob(job)
-                                        }
+                                    <article
+                                        className="employer-job-card"
+                                        key={job.id}
                                     >
 
-                                        <span>
-                                            ANALYZE
-                                        </span>
+                                        <div className="job-card-glow"></div>
 
-                                        <strong>
-                                            →
-                                        </strong>
+                                        <div className="job-index">
 
-                                    </button>
+                                            {String(
+                                                index + 1
+                                            ).padStart(
+                                                2,
+                                                "0"
+                                            )}
 
-                                </div>
+                                        </div>
 
-                            );
-                        })}
+
+                                        <div className="employer-job-main">
+
+                                            <div className="job-icon-box">
+
+                                                <span>
+                                                    ◈
+                                                </span>
+
+                                            </div>
+
+                                            <div>
+
+                                                <div className="job-module">
+                                                    POSITION // ACTIVE
+                                                </div>
+
+                                                <h3>
+                                                    {job.title}
+                                                </h3>
+
+                                                <p className="job-company">
+                                                    YOUR ORGANIZATION
+                                                </p>
+
+                                                <div className="job-meta">
+
+                                                    <span>
+                                                        📍 {job.location}
+                                                    </span>
+
+                                                    <span>
+                                                        💰 {job.salary}
+                                                    </span>
+
+                                                    <span>
+                                                        🧠 {job.experience}+ YEARS
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div className="job-applicant-count">
+
+                                            <span>
+                                                APPLICANTS
+                                            </span>
+
+                                            <strong>
+                                                {count}
+                                            </strong>
+
+                                            <small>
+                                                CANDIDATES
+                                            </small>
+
+                                        </div>
+
+
+                                        <button
+                                            className="view-applicants-button"
+                                            onClick={() =>
+                                                setSelectedJob(
+                                                    job
+                                                )
+                                            }
+                                        >
+
+                                            <span>
+                                                ANALYZE
+                                            </span>
+
+                                            <span>
+                                                →
+                                            </span>
+
+                                        </button>
+
+                                    </article>
+
+                                );
+
+                            }
+                        )}
 
                     </div>
 
                 )}
 
-            </div>
+            </section>
 
 
-            {/* ==========================
+            {/* =================================================
+                RECRUITMENT METRICS
+            ================================================= */}
+
+            <section className="employer-metrics">
+
+                <div className="metrics-heading">
+
+                    <div>
+
+                        <span>
+                            SYSTEM METRICS
+                        </span>
+
+                        <h2>
+                            TALENT PIPELINE
+                        </h2>
+
+                    </div>
+
+                    <div className="metrics-live">
+                        <span></span>
+                        LIVE
+                    </div>
+
+                </div>
+
+
+                <div className="metrics-grid">
+
+                    <div className="metric-box">
+
+                        <span>
+                            PENDING REVIEW
+                        </span>
+
+                        <strong>
+                            {pendingCount}
+                        </strong>
+
+                        <div className="metric-bar">
+                            <span
+                                style={{
+                                    width:
+                                        totalApplicants
+                                            ? `${Math.min(
+                                                  (pendingCount /
+                                                      totalApplicants) *
+                                                      100,
+                                                  100
+                                              )}%`
+                                            : "0%"
+                                }}
+                            ></span>
+                        </div>
+
+                    </div>
+
+
+                    <div className="metric-box">
+
+                        <span>
+                            SHORTLIST RATE
+                        </span>
+
+                        <strong>
+                            {totalApplicants
+                                ? Math.round(
+                                      (shortlistedCount /
+                                          totalApplicants) *
+                                          100
+                                  )
+                                : 0}
+                            %
+                        </strong>
+
+                        <div className="metric-bar purple-bar">
+                            <span
+                                style={{
+                                    width:
+                                        totalApplicants
+                                            ? `${Math.min(
+                                                  (shortlistedCount /
+                                                      totalApplicants) *
+                                                      100,
+                                                  100
+                                              )}%`
+                                            : "0%"
+                                }}
+                            ></span>
+                        </div>
+
+                    </div>
+
+
+                    <div className="metric-box">
+
+                        <span>
+                            ACCEPTANCE RATE
+                        </span>
+
+                        <strong>
+                            {totalApplicants
+                                ? Math.round(
+                                      (acceptedCount /
+                                          totalApplicants) *
+                                          100
+                                  )
+                                : 0}
+                            %
+                        </strong>
+
+                        <div className="metric-bar green-bar">
+                            <span
+                                style={{
+                                    width:
+                                        totalApplicants
+                                            ? `${Math.min(
+                                                  (acceptedCount /
+                                                      totalApplicants) *
+                                                      100,
+                                                  100
+                                              )}%`
+                                            : "0%"
+                                }}
+                            ></span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            {/* =================================================
+                ADD JOB MODAL
+            ================================================= */}
+
+            {showAddJob && (
+
+                <div
+                    className="add-job-overlay"
+                    onClick={() =>
+                        !creatingJob &&
+                        setShowAddJob(false)
+                    }
+                >
+
+                    <div
+                        className="add-job-modal"
+                        onClick={(event) =>
+                            event.stopPropagation()
+                        }
+                    >
+
+                        <button
+                            className="modal-close-button"
+                            onClick={() =>
+                                !creatingJob &&
+                                setShowAddJob(false)
+                            }
+                        >
+                            ×
+                        </button>
+
+
+                        <div className="modal-top-status">
+
+                            <span className="status-light"></span>
+
+                            POSITION DEPLOYMENT
+
+                            <span>
+                                READY
+                            </span>
+
+                        </div>
+
+
+                        <div className="add-job-heading">
+
+                            <div className="add-job-icon">
+                                +
+                            </div>
+
+                            <div>
+
+                                <div className="modal-module">
+                                    COMMAND // CREATE
+                                </div>
+
+                                <h2>
+                                    DEPLOY NEW POSITION
+                                </h2>
+
+                                <p>
+                                    Create a new recruitment mission for hunters.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <form
+                            className="add-job-form"
+                            onSubmit={createJob}
+                        >
+
+                            <div className="form-field">
+
+                                <label>
+                                    POSITION TITLE
+                                </label>
+
+                                <input
+                                    name="title"
+                                    value={newJob.title}
+                                    onChange={handleJobChange}
+                                    placeholder="e.g. Frontend Developer"
+                                />
+
+                            </div>
+
+
+                            <div className="form-field">
+
+                                <label>
+                                    DESCRIPTION
+                                </label>
+
+                                <textarea
+                                    name="description"
+                                    value={newJob.description}
+                                    onChange={handleJobChange}
+                                    placeholder="Describe the role, responsibilities and requirements..."
+                                    rows="5"
+                                />
+
+                            </div>
+
+
+                            <div className="form-row">
+
+                                <div className="form-field">
+
+                                    <label>
+                                        EXPERIENCE
+                                    </label>
+
+                                    <input
+                                        name="experience"
+                                        type="number"
+                                        min="0"
+                                        value={newJob.experience}
+                                        onChange={handleJobChange}
+                                        placeholder="2"
+                                    />
+
+                                    <small>
+                                        YEARS
+                                    </small>
+
+                                </div>
+
+
+                                <div className="form-field">
+
+                                    <label>
+                                        SALARY
+                                    </label>
+
+                                    <input
+                                        name="salary"
+                                        value={newJob.salary}
+                                        onChange={handleJobChange}
+                                        placeholder="8-12 LPA"
+                                    />
+
+                                </div>
+
+                            </div>
+
+
+                            <div className="form-field">
+
+                                <label>
+                                    LOCATION
+                                </label>
+
+                                <input
+                                    name="location"
+                                    value={newJob.location}
+                                    onChange={handleJobChange}
+                                    placeholder="Hyderabad / Remote"
+                                />
+
+                            </div>
+
+
+                            {jobError && (
+
+                                <div className="job-form-error">
+                                    ⚠ {jobError}
+                                </div>
+
+                            )}
+
+
+                            {jobMessage && (
+
+                                <div className="job-form-success">
+                                    ✓ {jobMessage}
+                                </div>
+
+                            )}
+
+
+                            <button
+                                type="submit"
+                                className="deploy-button"
+                                disabled={creatingJob}
+                            >
+
+                                {creatingJob ? (
+
+                                    <>
+                                        <span className="button-spinner"></span>
+                                        DEPLOYING POSITION...
+                                    </>
+
+                                ) : (
+
+                                    <>
+                                        ⚡ DEPLOY POSITION
+                                        <span>→</span>
+                                    </>
+
+                                )}
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
+            {/* =================================================
                 APPLICANTS MODAL
-            ========================== */}
+            ================================================= */}
 
             {selectedJob && (
 
@@ -613,8 +1289,6 @@ function EmployerDashboard() {
                         }
                     >
 
-                        {/* CLOSE */}
-
                         <button
                             className="employer-modal-close"
                             onClick={() =>
@@ -624,8 +1298,6 @@ function EmployerDashboard() {
                             ×
                         </button>
 
-
-                        {/* MODAL HEADER */}
 
                         <div className="modal-top-status">
 
@@ -666,8 +1338,6 @@ function EmployerDashboard() {
                         </div>
 
 
-                        {/* APPLICANTS */}
-
                         {selectedApplications.length === 0 ? (
 
                             <div className="empty-box modal-empty">
@@ -705,8 +1375,6 @@ function EmployerDashboard() {
                                                 }
                                             >
 
-                                                {/* APPLICANT HEADER */}
-
                                                 <div className="applicant-info">
 
                                                     <div className="applicant-avatar">
@@ -738,70 +1406,37 @@ function EmployerDashboard() {
                                                 </div>
 
 
-                                                {/* HUNTER DATA */}
-
                                                 <div className="hunter-info">
 
-                                                    <div>
+                                                    <span>
+                                                        ⚔️{" "}
+                                                        {
+                                                            applicant?.hunterRank ||
+                                                            "E-RANK"
+                                                        }
+                                                    </span>
 
-                                                        <small>
-                                                            RANK
-                                                        </small>
+                                                    <span>
+                                                        ⭐{" "}
+                                                        {
+                                                            applicant?.hunterScore ??
+                                                            0
+                                                        }
+                                                    </span>
 
-                                                        <span>
-                                                            ⚔️{" "}
-                                                            {
-                                                                applicant?.hunterRank ||
-                                                                "E-RANK"
-                                                            }
-                                                        </span>
-
-                                                    </div>
-
-
-                                                    <div>
-
-                                                        <small>
-                                                            SCORE
-                                                        </small>
-
-                                                        <span>
-                                                            ⭐{" "}
-                                                            {
-                                                                applicant?.hunterScore ??
-                                                                0
-                                                            }
-                                                        </span>
-
-                                                    </div>
-
-
-                                                    <div>
-
-                                                        <small>
-                                                            SKILLS
-                                                        </small>
-
-                                                        <span>
-                                                            🧠{" "}
-                                                            {
-                                                                applicant?.skillsCount ??
-                                                                0
-                                                            }
-                                                        </span>
-
-                                                    </div>
+                                                    <span>
+                                                        🧠{" "}
+                                                        {
+                                                            applicant?.skillsCount ??
+                                                            0
+                                                        }{" "}
+                                                        skills
+                                                    </span>
 
                                                 </div>
 
 
-                                                {/* STATUS */}
-
                                                 <div className="applicant-status">
-
-                                                    <span className="status-label">
-                                                        APPLICATION STATUS
-                                                    </span>
 
                                                     <span
                                                         className={
@@ -813,8 +1448,6 @@ function EmployerDashboard() {
 
                                                 </div>
 
-
-                                                {/* ACTIONS */}
 
                                                 <div className="applicant-actions">
 
@@ -836,7 +1469,7 @@ function EmployerDashboard() {
                                                                 )
                                                             }
                                                         >
-                                                            SHORTLIST
+                                                            🟡 SHORTLIST
                                                         </button>
 
                                                     )}
@@ -858,7 +1491,7 @@ function EmployerDashboard() {
                                                                 )
                                                             }
                                                         >
-                                                            ACCEPT
+                                                            🟢 ACCEPT
                                                         </button>
 
                                                     )}
@@ -882,7 +1515,7 @@ function EmployerDashboard() {
                                                                 )
                                                             }
                                                         >
-                                                            REJECT
+                                                            🔴 REJECT
                                                         </button>
 
                                                     )}

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import api from "../services/api";
 import "./Login.css";
 
@@ -33,9 +34,19 @@ function Login() {
                 password,
             });
 
-            localStorage.setItem("token", response.data.token);
+            const token = response.data.token;
 
-            navigate("/dashboard");
+localStorage.setItem("token", token);
+
+const decoded = jwtDecode(token);
+
+console.log("Logged in role:", decoded.role);
+
+if (decoded.role === "EMPLOYER") {
+    navigate("/employer");
+} else {
+    navigate("/dashboard");
+}
 
         } catch (error) {
 
@@ -231,6 +242,20 @@ function Login() {
                     </div>
 
                 </div>
+                <div className="signup-link">
+
+    <span>
+        NEW TO LEVEL UP?
+    </span>
+
+    <button
+        type="button"
+        onClick={() => navigate("/signup")}
+    >
+        CREATE ACCOUNT →
+    </button>
+
+</div>
 
 
                 {/* Rank display */}

@@ -224,6 +224,7 @@
         #a77cff
     );
     background-size: 200% auto;
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: titleShine 5s linear infinite;

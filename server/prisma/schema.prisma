@@ -7,11 +7,11 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  username     String
-  email        String   @unique
-  password     String
-  role         String
+  id       Int    @id @default(autoincrement())
+  username String
+  email    String @unique
+  password String
+  role     String
 
   bio          String?
   profileImage String?
@@ -20,11 +20,11 @@ model User {
   // HUNTER SYSTEM
   // ==========================
 
-  hunterScore  Int      @default(0)
-  hunterRank   String   @default("E-RANK")
-  hunterExp    Int      @default(0)
-  hunterLevel  Int      @default(1)
-  skillsCount  Int      @default(0)
+  hunterScore Int    @default(0)
+  hunterRank  String @default("E-RANK")
+  hunterExp   Int    @default(0)
+  hunterLevel Int    @default(1)
+  skillsCount Int    @default(0)
 
   // Stores the complete latest AI analysis
   resumeAnalysis Json?
@@ -37,17 +37,22 @@ model User {
   applications Application[]
   skills       UserSkill[]
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
+  // ==========================
+  // MISSION SYSTEM
+  // ==========================
 
+  missions UserMission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 // ==========================
 // JOB
 // ==========================
 
 model Job {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   title       String
   description String
@@ -56,93 +61,127 @@ model Job {
   location    String
 
   // Employer who created the job
-  employerId  Int
-  employer    User     @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employerId Int
+  employer   User @relation(fields: [employerId], references: [id], onDelete: Cascade)
 
   // Required skills
-  skills      JobSkill[]
+  skills JobSkill[]
 
   // Applications received for this job
   applications Application[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
 
 // ==========================
 // APPLICATION
 // ==========================
 
 model Application {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // Person applying
   applicantId Int
-  applicant   User     @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  applicant   User @relation(fields: [applicantId], references: [id], onDelete: Cascade)
 
   // Job being applied for
-  jobId       Int
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId Int
+  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   // Application status
-  status      String   @default("APPLIED")
+  status String @default("APPLIED")
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Prevent the same user from applying to the same job twice
   @@unique([applicantId, jobId])
 }
-
 
 // ==========================
 // SKILL
 // ==========================
 
 model Skill {
-  id        Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  name      String     @unique
+  name String @unique
 
-  users     UserSkill[]
-  jobs      JobSkill[]
+  users UserSkill[]
+  jobs  JobSkill[]
 
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
 }
-
 
 // ==========================
 // USER SKILL
 // ==========================
 
 model UserSkill {
-  id      Int   @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   userId  Int
   skillId Int
 
-  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   // Prevent duplicate skills for the same user
   @@unique([userId, skillId])
 }
-
 
 // ==========================
 // JOB SKILL
 // ==========================
 
 model JobSkill {
-  id      Int   @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   jobId   Int
   skillId Int
 
-  job     Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   // Prevent duplicate skills for the same job
   @@unique([jobId, skillId])
+}
+
+// ==========================
+// DAILY MISSIONS
+// ==========================
+
+model Mission {
+  id Int @id @default(autoincrement())
+
+  title       String
+  description String
+  rewardExp   Int    @default(50)
+
+  // How many times the mission can be completed
+  type String @default("DAILY")
+
+  userMissions UserMission[]
+
+  createdAt DateTime @default(now())
+}
+
+// ==========================
+// USER MISSION PROGRESS
+// ==========================
+
+model UserMission {
+  id Int @id @default(autoincrement())
+
+  userId    Int
+  missionId Int
+
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, missionId])
 }

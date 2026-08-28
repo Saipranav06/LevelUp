@@ -11,6 +11,10 @@ function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const [missions, setMissions] = useState([]);
+    const [missionsLoading, setMissionsLoading] = useState(true);
+    const [missionsError, setMissionsError] = useState("");
+
     // ==========================
     // GET HUNTER DATA
     // ==========================
@@ -68,6 +72,66 @@ function Dashboard() {
         fetchHunterData();
 
     }, []);
+
+    // ==========================
+// GET DAILY MISSIONS
+// ==========================
+
+useEffect(() => {
+
+    const fetchMissions = async () => {
+
+        try {
+
+            setMissionsLoading(true);
+            setMissionsError("");
+
+            const token =
+                localStorage.getItem("token");
+
+            const response =
+                await api.get(
+                    "/missions",
+                    {
+                        headers: {
+                            Authorization:
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+            console.log(
+                "Dashboard missions:",
+                response.data
+            );
+
+            setMissions(
+                response.data.missions || []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Dashboard missions error:",
+                error
+            );
+
+            setMissionsError(
+                error.response?.data?.message ||
+                "Failed to load missions"
+            );
+
+        } finally {
+
+            setMissionsLoading(false);
+
+        }
+
+    };
+
+    fetchMissions();
+
+}, []);
 
 
     // ==========================
@@ -585,6 +649,196 @@ function Dashboard() {
 
             </section>
 
+            {/* ==========================
+    DAILY MISSIONS
+========================== */}
+
+<section className="dashboard-missions">
+
+    <div className="missions-dashboard-header">
+
+        <div>
+
+            <span className="missions-dashboard-kicker">
+                DAILY PROTOCOL
+            </span>
+
+            <h2 className="missions-dashboard-title">
+                HUNTER MISSIONS
+            </h2>
+
+            <p className="missions-dashboard-subtitle">
+                Complete daily challenges and earn EXP.
+            </p>
+
+        </div>
+
+        <button
+            className="missions-view-all"
+            onClick={() =>
+                navigate("/missions")
+            }
+        >
+            VIEW ALL
+            <span>→</span>
+        </button>
+
+    </div>
+
+
+    {/* ==========================
+        LOADING
+    ========================== */}
+
+    {missionsLoading && (
+
+        <div className="missions-dashboard-loading">
+
+            <span className="mission-loading-dot"></span>
+
+            INITIALIZING DAILY MISSIONS...
+
+        </div>
+
+    )}
+
+
+    {/* ==========================
+        ERROR
+    ========================== */}
+
+    {!missionsLoading &&
+        missionsError && (
+
+            <div className="missions-dashboard-error">
+
+                <span>⚠</span>
+
+                <div>
+
+                    <strong>
+                        MISSION SYSTEM OFFLINE
+                    </strong>
+
+                    <p>
+                        {missionsError}
+                    </p>
+
+                </div>
+
+            </div>
+
+        )}
+
+
+    {/* ==========================
+        MISSIONS
+    ========================== */}
+
+    {!missionsLoading &&
+        !missionsError &&
+        missions.length > 0 && (
+
+            <div className="dashboard-mission-list">
+
+                {missions
+                    .slice(0, 3)
+                    .map((mission) => (
+
+                        <div
+                            className={
+                                `dashboard-mission-card ${
+                                    mission.completed
+                                        ? "mission-completed"
+                                        : ""
+                                }`
+                            }
+                            key={mission.id}
+                        >
+
+                            <div className="dashboard-mission-icon">
+
+                                {mission.completed
+                                    ? "✓"
+                                    : "⚔"}
+
+                            </div>
+
+
+                            <div className="dashboard-mission-content">
+
+                                <span className="dashboard-mission-type">
+                                    {mission.type || "DAILY"}
+                                </span>
+
+                                <h3>
+                                    {mission.title}
+                                </h3>
+
+                                <p>
+                                    {mission.description}
+                                </p>
+
+                            </div>
+
+
+                            <div className="dashboard-mission-reward">
+
+                                <span>
+                                    REWARD
+                                </span>
+
+                                <strong>
+                                    +{mission.rewardExp}
+                                </strong>
+
+                                <small>
+                                    EXP
+                                </small>
+
+                            </div>
+
+
+                            <div className="dashboard-mission-status">
+
+                                {mission.completed
+                                    ? "COMPLETED"
+                                    : "AVAILABLE"}
+
+                            </div>
+
+                        </div>
+
+                    ))}
+
+            </div>
+
+        )}
+
+
+    {/* ==========================
+        EMPTY
+    ========================== */}
+
+    {!missionsLoading &&
+        !missionsError &&
+        missions.length === 0 && (
+
+            <div className="missions-dashboard-empty">
+
+                <span>
+                    ◆
+                </span>
+
+                <p>
+                    NO ACTIVE MISSIONS AVAILABLE
+                </p>
+
+            </div>
+
+        )}
+
+</section>
 
             {/* ==========================
                 HUNTER STATS

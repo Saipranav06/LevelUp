@@ -1,0 +1,745 @@
+/* =========================================================
+   HUNTER MISSIONS PAGE
+========================================================= */
+
+.missions-page {
+    min-height: 100vh;
+    padding: 35px 5%;
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(30, 70, 150, 0.14),
+            transparent 35%
+        ),
+        #020308;
+    color: #f4f7ff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.missions-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 55px;
+}
+
+.mission-back-btn {
+    background: transparent;
+    border: 1px solid #154a86;
+    color: #9fc8ff;
+    padding: 12px 20px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.mission-back-btn:hover {
+    background: #07182e;
+    border-color: #398cff;
+    color: white;
+    transform: translateX(-3px);
+}
+
+.mission-system-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #16406c;
+    border-radius: 7px;
+    padding: 10px 18px;
+    color: #61e6a4;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    background: #35ffa0;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #35ffa0;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.missions-header {
+    text-align: center;
+    max-width: 850px;
+    margin: 0 auto 50px;
+}
+
+.missions-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #62aaff;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    margin-bottom: 18px;
+}
+
+.missions-eyebrow span {
+    width: 45px;
+    height: 1px;
+    background: #2868b0;
+}
+
+.missions-header h1 {
+    margin: 0;
+    font-size: clamp(35px, 5vw, 62px);
+    letter-spacing: 7px;
+    font-weight: 800;
+    background: linear-gradient(
+        90deg,
+        #ffffff,
+        #77baff,
+        #ffffff
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: missionTitle 5s linear infinite;
+}
+
+@keyframes missionTitle {
+    to {
+        background-position: 200% center;
+    }
+}
+
+.missions-header p {
+    margin-top: 16px;
+    color: #70819e;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.mission-message {
+    max-width: 900px;
+    margin: 0 auto 25px;
+    padding: 15px 20px;
+    border: 1px solid #155c49;
+    background: rgba(15, 65, 48, 0.2);
+    border-radius: 8px;
+    color: #63e6a5;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.message-icon {
+    margin-right: 10px;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.mission-error {
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 25px;
+    border: 1px solid #702929;
+    background: #180909;
+    border-radius: 10px;
+    text-align: center;
+    color: #e78b8b;
+}
+
+.mission-error strong {
+    letter-spacing: 2px;
+}
+
+.mission-error p {
+    color: #9e6666;
+    margin: 10px 0 20px;
+}
+
+.mission-error button {
+    background: transparent;
+    border: 1px solid #9a4545;
+    color: #ef9a9a;
+    padding: 9px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.mission-stats {
+    max-width: 1050px;
+    margin: 0 auto 55px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.mission-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(12, 22, 40, 0.95),
+            rgba(4, 8, 17, 0.95)
+        );
+    border: 1px solid #12345b;
+    border-radius: 10px;
+    transition: 0.25s ease;
+}
+
+.mission-stat-card:hover {
+    border-color: #2b72c4;
+    transform: translateY(-3px);
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #071a35;
+    border: 1px solid #1e5da1;
+    color: #5eaaff;
+    font-size: 21px;
+}
+
+.stat-icon.xp {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.mission-stat-card span {
+    display: block;
+    color: #536782;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.mission-stat-card strong {
+    font-size: 24px;
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.missions-section {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #10223b;
+    padding-bottom: 18px;
+}
+
+.section-heading > div:first-child span {
+    color: #507db0;
+    font-size: 9px;
+    letter-spacing: 3px;
+    font-weight: bold;
+}
+
+.section-heading h2 {
+    margin: 7px 0 0;
+    font-size: 24px;
+    letter-spacing: 3px;
+}
+
+.mission-count {
+    color: #587da5;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.missions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
+}
+
+
+/* =========================================================
+   MISSION CARD
+========================================================= */
+
+.mission-card {
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    min-height: 285px;
+    display: flex;
+    flex-direction: column;
+
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(35, 93, 170, 0.10),
+            transparent 35%
+        ),
+        #050914;
+
+    border: 1px solid #15365d;
+    border-radius: 12px;
+
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.mission-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 45%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        #2589ff,
+        transparent
+    );
+}
+
+.mission-card:hover {
+    transform: translateY(-5px);
+    border-color: #286db6;
+    box-shadow:
+        0 15px 45px rgba(0, 70, 150, 0.13);
+}
+
+.mission-card.completed {
+    border-color: #164b3b;
+    background:
+        radial-gradient(
+            circle at 100% 0%,
+            rgba(25, 120, 82, 0.10),
+            transparent 35%
+        ),
+        #040b09;
+}
+
+.mission-card.completed::before {
+    background: linear-gradient(
+        90deg,
+        #2ddc91,
+        transparent
+    );
+}
+
+
+/* =========================================================
+   NUMBER
+========================================================= */
+
+.mission-number {
+    position: absolute;
+    top: 20px;
+    right: 23px;
+    color: #24486f;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   TOP
+========================================================= */
+
+.mission-card-top {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 22px;
+}
+
+.mission-symbol {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
+    border: 1px solid #235c9b;
+    background: #071b37;
+
+    color: #58a9ff;
+    font-size: 20px;
+
+    box-shadow:
+        0 0 20px rgba(30, 115, 220, 0.12);
+}
+
+.mission-symbol.done {
+    color: #55e4a0;
+    border-color: #23694d;
+    background: #092117;
+}
+
+.mission-type span {
+    display: block;
+    color: #5784b5;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.mission-type small {
+    display: block;
+    margin-top: 5px;
+    color: #4ed897;
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+.mission-card h3 {
+    margin: 0 0 12px;
+    color: #e8effc;
+    font-size: 21px;
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.mission-description {
+    margin: 0;
+    color: #71819b;
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 90%;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.mission-divider {
+    height: 1px;
+    width: 100%;
+    margin: auto 0 20px;
+    background: #11243d;
+}
+
+
+/* =========================================================
+   CARD BOTTOM
+========================================================= */
+
+.mission-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.mission-reward span {
+    display: block;
+    color: #4d6480;
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.mission-reward strong {
+    color: #7cbaff;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.mission-card.completed .mission-reward strong {
+    color: #55dfa0;
+}
+
+
+/* =========================================================
+   COMPLETE BUTTON
+========================================================= */
+
+.mission-complete-btn {
+    min-width: 130px;
+    padding: 11px 16px;
+
+    border: 1px solid #2876c6;
+    border-radius: 6px;
+
+    background:
+        linear-gradient(
+            100deg,
+            #071a33,
+            #10152c
+        );
+
+    color: #8ec5ff;
+
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+
+    cursor: pointer;
+
+    transition:
+        0.25s ease;
+}
+
+.mission-complete-btn:hover:not(:disabled) {
+    border-color: #5faaff;
+    color: white;
+    background: #0b2445;
+    box-shadow:
+        0 0 22px rgba(50, 140, 255, 0.16);
+    transform: translateX(2px);
+}
+
+.mission-complete-btn span {
+    margin-left: 8px;
+}
+
+.mission-complete-btn:disabled {
+    cursor: default;
+}
+
+.mission-complete-btn.completed-btn {
+    border-color: #23644b;
+    background: #081912;
+    color: #52d99b;
+}
+
+
+/* =========================================================
+   BUTTON SPINNER
+========================================================= */
+
+.button-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-right: 7px;
+
+    border: 2px solid #355c83;
+    border-top-color: #8bc4ff;
+    border-radius: 50%;
+
+    animation: spinMission 0.8s linear infinite;
+}
+
+@keyframes spinMission {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.missions-empty {
+    padding: 70px 30px;
+    text-align: center;
+    border: 1px solid #132c4a;
+    border-radius: 12px;
+    background: #050914;
+}
+
+.empty-symbol {
+    font-size: 45px;
+    margin-bottom: 15px;
+    color: #4275a8;
+}
+
+.missions-empty h2 {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.missions-empty p {
+    color: #61718a;
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.missions-loading {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.missions-loading p {
+    color: #6284a9;
+    font-size: 10px;
+    letter-spacing: 3px;
+}
+
+.mission-spinner {
+    width: 45px;
+    height: 45px;
+
+    border: 3px solid #112d4f;
+    border-top-color: #4da2ff;
+
+    border-radius: 50%;
+
+    animation: spinMission 0.8s linear infinite;
+
+    box-shadow:
+        0 0 25px rgba(40, 130, 255, 0.15);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.missions-footer {
+    max-width: 1100px;
+    margin: 55px auto 15px;
+    padding-top: 20px;
+    border-top: 1px solid #0d1c30;
+
+    display: flex;
+    justify-content: space-between;
+
+    color: #3e5875;
+    font-size: 8px;
+    letter-spacing: 2px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 850px) {
+
+    .missions-page {
+        padding: 25px 20px;
+    }
+
+    .mission-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .missions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .missions-topbar {
+        margin-bottom: 40px;
+    }
+
+    .missions-header h1 {
+        letter-spacing: 4px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .missions-topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .mission-system-status {
+        justify-content: center;
+    }
+
+    .missions-header {
+        margin-bottom: 35px;
+    }
+
+    .missions-header h1 {
+        font-size: 32px;
+    }
+
+    .missions-header p {
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mission-card {
+        padding: 22px;
+    }
+
+    .mission-card-bottom {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mission-complete-btn {
+        width: 100%;
+    }
+
+    .missions-footer {
+        flex-direction: column;
+        gap: 10px;
+        line-height: 1.5;
+    }
+
+}

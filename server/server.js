@@ -620,6 +620,73 @@ app.get(
 );
 
 // ==========================
+// Get Employer's Own Jobs
+// ==========================
+
+app.get(
+    "/api/employer/jobs",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const jobs =
+                await prisma.job.findMany({
+
+                    where: {
+                        employerId: req.user.id
+                    },
+
+                    include: {
+
+                        employer: {
+
+                            select: {
+
+                                id: true,
+                                username: true,
+                                email: true
+
+                            }
+
+                        }
+
+                    },
+
+                    orderBy: {
+
+                        createdAt: "desc"
+
+                    }
+
+                });
+
+            res.json({
+
+                jobs: jobs
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get employer jobs error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch employer jobs"
+
+            });
+
+        }
+
+    }
+);
+// ==========================
 // Apply To Job API
 // ==========================
 
@@ -1126,6 +1193,702 @@ app.get(
 
                 message:
                     "Failed to fetch your applications"
+
+            });
+
+        }
+
+    }
+);
+
+// ============================================================
+//                    MISSION SYSTEM
+// ============================================================
+
+
+// ============================================================
+// GET DAILY MISSIONS
+// ============================================================
+
+app.get(
+    "/api/missions",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId = req.user.id;
+
+
+            // Get all missions
+            const missions =
+                await prisma.mission.findMany({
+
+                    orderBy: {
+                        id: "asc"
+                    }
+
+                });
+
+
+            // Get current user's mission progress
+            const userMissions =
+                await prisma.userMission.findMany({
+
+                    where: {
+                        userId: userId
+                    }
+
+                });
+
+
+            // Create lookup object
+            const progressMap = {};
+
+            userMissions.forEach(
+                (userMission) => {
+
+                    progressMap[
+                        userMission.missionId
+                    ] = userMission;
+
+                }
+            );
+
+
+            // Combine missions with user progress
+            const missionsWithProgress =
+                missions.map((mission) => {
+
+                    const progress =
+                        progressMap[
+                            mission.id
+                        ];
+
+
+                    return {
+
+                        id:
+                            mission.id,
+
+                        title:
+                            mission.title,
+
+                        description:
+                            mission.description,
+
+                        rewardExp:
+                            mission.rewardExp,
+
+                        type:
+                            mission.type,
+
+                        completed:
+                            progress
+                                ? progress.completed
+                                : false,
+
+                        completedAt:
+                            progress
+                                ? progress.completedAt
+                                : null
+
+                    };
+
+                });
+
+
+            res.json({
+
+                missions:
+                    missionsWithProgress
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get missions error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch missions"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
+// COMPLETE MISSION API
+// ==========================
+
+app.post(
+    "/api/missions/:missionId/complete",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId = req.user.id;
+            const missionId = Number(req.params.missionId);
+
+            if (!missionId) {
+                return res.status(400).json({
+                    message: "Invalid mission ID"
+                });
+            }
+
+            // Check mission exists
+            const mission = await prisma.mission.findUnique({
+                where: {
+                    id: missionId
+                }
+            });
+
+            if (!mission) {
+                return res.status(404).json({
+                    message: "Mission not found"
+                });
+            }
+
+            // Check whether user already completed it
+            const existing = await prisma.userMission.findUnique({
+                where: {
+                    userId_missionId: {
+                        userId: userId,
+                        missionId: missionId
+                    }
+                }
+            });
+
+            if (existing?.completed) {
+                return res.status(400).json({
+                    message: "Mission already completed"
+                });
+            }
+
+            // Create/update mission progress
+            const userMission = await prisma.userMission.upsert({
+
+                where: {
+                    userId_missionId: {
+                        userId: userId,
+                        missionId: missionId
+                    }
+                },
+
+                update: {
+                    completed: true,
+                    completedAt: new Date()
+                },
+
+                create: {
+                    userId: userId,
+                    missionId: missionId,
+                    completed: true,
+                    completedAt: new Date()
+                }
+
+            });
+
+            // Add EXP to hunter
+            const hunter = await prisma.user.findUnique({
+                where: {
+                    id: userId
+                },
+
+                select: {
+                    hunterExp: true,
+                    hunterLevel: true,
+                    hunterRank: true
+                }
+            });
+
+            const newExp =
+                hunter.hunterExp + mission.rewardExp;
+
+            // ==========================
+            // LEVEL CALCULATION
+            // ==========================
+
+            const newLevel =
+                Math.floor(newExp / 1000) + 1;
+
+            // ==========================
+            // RANK CALCULATION
+            // ==========================
+
+            let newRank = "E-RANK";
+
+            if (newLevel >= 20) {
+                newRank = "S-RANK";
+            } else if (newLevel >= 15) {
+                newRank = "A-RANK";
+            } else if (newLevel >= 10) {
+                newRank = "B-RANK";
+            } else if (newLevel >= 5) {
+                newRank = "C-RANK";
+            } else if (newLevel >= 3) {
+                newRank = "D-RANK";
+            }
+
+            // Update hunter
+            const updatedHunter = await prisma.user.update({
+
+                where: {
+                    id: userId
+                },
+
+                data: {
+                    hunterExp: newExp,
+                    hunterLevel: newLevel,
+                    hunterRank: newRank,
+
+                    hunterScore: {
+                        increment: mission.rewardExp
+                    }
+                },
+
+                select: {
+                    hunterExp: true,
+                    hunterLevel: true,
+                    hunterRank: true,
+                    hunterScore: true
+                }
+
+            });
+
+            res.json({
+
+                message: "Mission completed successfully!",
+
+                rewardExp: mission.rewardExp,
+
+                mission: userMission,
+
+                hunter: updatedHunter
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Complete mission error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to complete mission"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// COMPLETE MISSION
+// ============================================================
+
+app.post(
+    "/api/missions/:missionId/complete",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId =
+                req.user.id;
+
+            const missionId =
+                Number(
+                    req.params.missionId
+                );
+
+
+            // ------------------------------------------------
+            // Validate mission ID
+            // ------------------------------------------------
+
+            if (
+                !missionId ||
+                Number.isNaN(missionId)
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Invalid mission ID"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // Find mission
+            // ------------------------------------------------
+
+            const mission =
+                await prisma.mission.findUnique({
+
+                    where: {
+                        id: missionId
+                    }
+
+                });
+
+
+            if (!mission) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Mission not found"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // Check if user already completed it
+            // ------------------------------------------------
+
+            const existingMission =
+                await prisma.userMission.findUnique({
+
+                    where: {
+
+                        userId_missionId: {
+
+                            userId:
+                                userId,
+
+                            missionId:
+                                missionId
+
+                        }
+
+                    }
+
+                });
+
+
+            if (
+                existingMission &&
+                existingMission.completed
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Mission already completed"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // Get current Hunter information
+            // ------------------------------------------------
+
+            const hunter =
+                await prisma.user.findUnique({
+
+                    where: {
+                        id: userId
+                    },
+
+                    select: {
+
+                        hunterExp:
+                            true,
+
+                        hunterLevel:
+                            true,
+
+                        hunterRank:
+                            true,
+
+                        hunterScore:
+                            true
+
+                    }
+
+                });
+
+
+            if (!hunter) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Hunter not found"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // Calculate new EXP
+            // ------------------------------------------------
+
+            const earnedExp =
+                mission.rewardExp;
+
+            const newTotalExp =
+                hunter.hunterExp +
+                earnedExp;
+
+
+            // ------------------------------------------------
+            // Calculate level
+            // ------------------------------------------------
+
+            const newLevel =
+                Math.floor(
+                    newTotalExp / 1000
+                ) + 1;
+
+
+            // ------------------------------------------------
+            // Calculate Hunter Rank
+            // ------------------------------------------------
+
+            let newRank =
+                "E-RANK";
+
+
+            if (newTotalExp >= 10000) {
+
+                newRank =
+                    "S-RANK";
+
+            } else if (
+                newTotalExp >= 7500
+            ) {
+
+                newRank =
+                    "A-RANK";
+
+            } else if (
+                newTotalExp >= 5000
+            ) {
+
+                newRank =
+                    "B-RANK";
+
+            } else if (
+                newTotalExp >= 3000
+            ) {
+
+                newRank =
+                    "C-RANK";
+
+            } else if (
+                newTotalExp >= 1500
+            ) {
+
+                newRank =
+                    "D-RANK";
+
+            }
+
+
+            // ------------------------------------------------
+            // Update everything in one transaction
+            // ------------------------------------------------
+
+            const result =
+                await prisma.$transaction(
+
+                    async (tx) => {
+
+
+                        // Mark mission completed
+                        const userMission =
+                            await tx.userMission.upsert({
+
+                                where: {
+
+                                    userId_missionId: {
+
+                                        userId:
+                                            userId,
+
+                                        missionId:
+                                            missionId
+
+                                    }
+
+                                },
+
+                                update: {
+
+                                    completed:
+                                        true,
+
+                                    completedAt:
+                                        new Date()
+
+                                },
+
+                                create: {
+
+                                    userId:
+                                        userId,
+
+                                    missionId:
+                                        missionId,
+
+                                    completed:
+                                        true,
+
+                                    completedAt:
+                                        new Date()
+
+                                }
+
+                            });
+
+
+                        // Update Hunter
+                        const updatedHunter =
+                            await tx.user.update({
+
+                                where: {
+
+                                    id:
+                                        userId
+
+                                },
+
+                                data: {
+
+                                    hunterExp:
+                                        newTotalExp,
+
+                                    hunterLevel:
+                                        newLevel,
+
+                                    hunterRank:
+                                        newRank,
+
+                                    hunterScore:
+                                        {
+                                            increment:
+                                                earnedExp
+                                        }
+
+                                },
+
+                                select: {
+
+                                    hunterExp:
+                                        true,
+
+                                    hunterLevel:
+                                        true,
+
+                                    hunterRank:
+                                        true,
+
+                                    hunterScore:
+                                        true
+
+                                }
+
+                            });
+
+
+                        return {
+
+                            userMission:
+                                userMission,
+
+                            hunter:
+                                updatedHunter
+
+                        };
+
+                    }
+
+                );
+
+
+            // ------------------------------------------------
+            // Send response
+            // ------------------------------------------------
+
+            res.json({
+
+                message:
+                    "Mission completed successfully! 🎯",
+
+                mission: {
+
+                    id:
+                        mission.id,
+
+                    title:
+                        mission.title,
+
+                    rewardExp:
+                        mission.rewardExp
+
+                },
+
+                earnedExp:
+                    earnedExp,
+
+                hunter: {
+
+                    exp:
+                        result.hunter.hunterExp,
+
+                    level:
+                        result.hunter.hunterLevel,
+
+                    rank:
+                        result.hunter.hunterRank,
+
+                    score:
+                        result.hunter.hunterScore
+
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Complete mission error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to complete mission"
 
             });
 
@@ -1718,6 +2481,1007 @@ ${resumeText}
     }
 );
 
+// ==========================================================
+// HUNTER DAILY MISSIONS
+// ==========================================================
+
+
+// ==========================
+// GET MISSIONS
+// ==========================
+
+app.get(
+    "/api/missions",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const missions =
+                await prisma.mission.findMany({
+
+                    orderBy: {
+                        id: "asc"
+                    }
+
+                });
+
+
+            // Get user's progress
+            const userMissions =
+                await prisma.userMission.findMany({
+
+                    where: {
+                        userId: req.user.id
+                    }
+
+                });
+
+
+            const progressMap =
+                {};
+
+            userMissions.forEach(
+                (item) => {
+
+                    progressMap[
+                        item.missionId
+                    ] = item;
+
+                }
+            );
+
+
+            const missionsWithProgress =
+                missions.map(
+                    (mission) => {
+
+                        const progress =
+                            progressMap[
+                                mission.id
+                            ];
+
+
+                        return {
+
+                            id:
+                                mission.id,
+
+                            title:
+                                mission.title,
+
+                            description:
+                                mission.description,
+
+                            rewardExp:
+                                mission.rewardExp,
+
+                            type:
+                                mission.type,
+
+                            completed:
+                                progress
+                                    ? progress.completed
+                                    : false,
+
+                            completedAt:
+                                progress
+                                    ? progress.completedAt
+                                    : null
+
+                        };
+
+                    }
+                );
+
+
+            res.json({
+
+                missions:
+                    missionsWithProgress
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get missions error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch missions"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ==========================
+// COMPLETE MISSION
+// ==========================
+
+app.post(
+    "/api/missions/:id/complete",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const missionId =
+                Number(req.params.id);
+
+
+            if (isNaN(missionId)) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Invalid mission ID"
+
+                });
+
+            }
+
+
+            // ==========================
+            // FIND MISSION
+            // ==========================
+
+            const mission =
+                await prisma.mission.findUnique({
+
+                    where: {
+                        id: missionId
+                    }
+
+                });
+
+
+            if (!mission) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Mission not found"
+
+                });
+
+            }
+
+
+            // ==========================
+            // CHECK EXISTING PROGRESS
+            // ==========================
+
+            const existing =
+                await prisma.userMission.findUnique({
+
+                    where: {
+
+                        userId_missionId: {
+
+                            userId:
+                                req.user.id,
+
+                            missionId:
+                                missionId
+
+                        }
+
+                    }
+
+                });
+
+
+            if (
+                existing &&
+                existing.completed
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Mission already completed"
+
+                });
+
+            }
+
+
+            // ==========================
+            // COMPLETE MISSION
+            // ==========================
+
+            const userMission =
+                await prisma.userMission.upsert({
+
+                    where: {
+
+                        userId_missionId: {
+
+                            userId:
+                                req.user.id,
+
+                            missionId:
+                                missionId
+
+                        }
+
+                    },
+
+                    update: {
+
+                        completed:
+                            true,
+
+                        completedAt:
+                            new Date()
+
+                    },
+
+                    create: {
+
+                        userId:
+                            req.user.id,
+
+                        missionId:
+                            missionId,
+
+                        completed:
+                            true,
+
+                        completedAt:
+                            new Date()
+
+                    }
+
+                });
+
+
+            // ==========================
+            // GET CURRENT HUNTER
+            // ==========================
+
+            const hunter =
+                await prisma.user.findUnique({
+
+                    where: {
+
+                        id:
+                            req.user.id
+
+                    },
+
+                    select: {
+
+                        hunterExp:
+                            true,
+
+                        hunterLevel:
+                            true,
+
+                        hunterScore:
+                            true,
+
+                        hunterRank:
+                            true
+
+                    }
+
+                });
+
+
+            if (!hunter) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Hunter not found"
+
+                });
+
+            }
+
+
+            // ==========================
+            // ADD EXP
+            // ==========================
+
+            const newExp =
+                hunter.hunterExp +
+                mission.rewardExp;
+
+
+            // ==========================
+            // LEVEL SYSTEM
+            // ==========================
+
+            const expPerLevel =
+                1000;
+
+
+            const newLevel =
+                Math.floor(
+                    newExp /
+                    expPerLevel
+                ) + 1;
+
+
+            // ==========================
+            // UPDATE HUNTER
+            // ==========================
+
+            const updatedHunter =
+                await prisma.user.update({
+
+                    where: {
+
+                        id:
+                            req.user.id
+
+                    },
+
+                    data: {
+
+                        hunterExp:
+                            newExp,
+
+                        hunterLevel:
+                            newLevel,
+
+                        hunterScore:
+                            hunter.hunterScore +
+                            mission.rewardExp
+
+                    },
+
+                    select: {
+
+                        hunterExp:
+                            true,
+
+                        hunterLevel:
+                            true,
+
+                        hunterScore:
+                            true,
+
+                        hunterRank:
+                            true
+
+                    }
+
+                });
+
+
+            // ==========================
+            // RESPONSE
+            // ==========================
+
+            res.json({
+
+                message:
+                    "Mission completed successfully! ⚔️",
+
+                mission: {
+
+                    id:
+                        mission.id,
+
+                    title:
+                        mission.title,
+
+                    rewardExp:
+                        mission.rewardExp
+
+                },
+
+                progress:
+                    userMission,
+
+                hunter:
+                    updatedHunter
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Complete mission error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to complete mission"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ==========================================================
+// GET USER MISSION PROGRESS
+// ==========================================================
+
+app.get(
+    "/api/missions/progress",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const progress =
+                await prisma.userMission.findMany({
+
+                    where: {
+
+                        userId:
+                            req.user.id
+
+                    },
+
+                    include: {
+
+                        mission:
+                            true
+
+                    },
+
+                    orderBy: {
+
+                        completedAt:
+                            "desc"
+
+                    }
+
+                });
+
+
+            res.json({
+
+                progress:
+                    progress
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Mission progress error:",
+                error
+            );
+
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch mission progress"
+
+            });
+
+        }
+
+    }
+);
+
+// ============================================================
+// DAILY MISSIONS
+// ============================================================
+
+// GET ALL MISSIONS FOR LOGGED-IN HUNTER
+app.get(
+    "/api/missions",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const missions =
+                await prisma.mission.findMany({
+
+                    include: {
+
+                        userMissions: {
+
+                            where: {
+                                userId: req.user.id
+                            }
+
+                        }
+
+                    },
+
+                    orderBy: {
+                        id: "asc"
+                    }
+
+                });
+
+
+            const formattedMissions =
+                missions.map((mission) => {
+
+                    const progress =
+                        mission.userMissions[0];
+
+                    return {
+
+                        id: mission.id,
+
+                        title:
+                            mission.title,
+
+                        description:
+                            mission.description,
+
+                        rewardExp:
+                            mission.rewardExp,
+
+                        type:
+                            mission.type,
+
+                        completed:
+                            progress
+                                ? progress.completed
+                                : false,
+
+                        completedAt:
+                            progress
+                                ? progress.completedAt
+                                : null
+
+                    };
+
+                });
+
+
+            res.json({
+
+                missions:
+                    formattedMissions
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Get missions error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to fetch missions"
+
+            });
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// COMPLETE MISSION
+// ============================================================
+
+app.post(
+    "/api/missions/:missionId/complete",
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const missionId =
+                Number(req.params.missionId);
+
+
+            // ------------------------------------------------
+            // CHECK MISSION EXISTS
+            // ------------------------------------------------
+
+            const mission =
+                await prisma.mission.findUnique({
+
+                    where: {
+                        id: missionId
+                    }
+
+                });
+
+
+            if (!mission) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Mission not found"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // CHECK IF ALREADY COMPLETED
+            // ------------------------------------------------
+
+            const existingProgress =
+                await prisma.userMission.findUnique({
+
+                    where: {
+
+                        userId_missionId: {
+
+                            userId:
+                                req.user.id,
+
+                            missionId:
+                                missionId
+
+                        }
+
+                    }
+
+                });
+
+
+            if (
+                existingProgress &&
+                existingProgress.completed
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Mission already completed"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // GET CURRENT HUNTER
+            // ------------------------------------------------
+
+            const hunter =
+                await prisma.user.findUnique({
+
+                    where: {
+                        id: req.user.id
+                    },
+
+                    select: {
+
+                        hunterExp: true,
+
+                        hunterLevel: true,
+
+                        hunterScore: true,
+
+                        hunterRank: true
+
+                    }
+
+                });
+
+
+            if (!hunter) {
+
+                return res.status(404).json({
+
+                    message:
+                        "Hunter not found"
+
+                });
+
+            }
+
+
+            // ------------------------------------------------
+            // CALCULATE NEW EXP
+            // ------------------------------------------------
+
+            const earnedExp =
+                mission.rewardExp;
+
+
+            const newTotalExp =
+                hunter.hunterExp +
+                earnedExp;
+
+
+            const newLevel =
+                Math.floor(
+                    newTotalExp / 1000
+                ) + 1;
+
+
+            // ------------------------------------------------
+            // CALCULATE RANK
+            // ------------------------------------------------
+
+            let newRank = "E-RANK";
+
+
+            if (newLevel >= 50) {
+
+                newRank = "S-RANK";
+
+            } else if (newLevel >= 35) {
+
+                newRank = "A-RANK";
+
+            } else if (newLevel >= 25) {
+
+                newRank = "B-RANK";
+
+            } else if (newLevel >= 15) {
+
+                newRank = "C-RANK";
+
+            } else if (newLevel >= 5) {
+
+                newRank = "D-RANK";
+
+            }
+
+
+            // ------------------------------------------------
+            // DATABASE TRANSACTION
+            // ------------------------------------------------
+
+            const result =
+                await prisma.$transaction(
+                    async (tx) => {
+
+                        // Complete mission
+                        const userMission =
+                            await tx.userMission.upsert({
+
+                                where: {
+
+                                    userId_missionId: {
+
+                                        userId:
+                                            req.user.id,
+
+                                        missionId:
+                                            missionId
+
+                                    }
+
+                                },
+
+                                update: {
+
+                                    completed:
+                                        true,
+
+                                    completedAt:
+                                        new Date()
+
+                                },
+
+                                create: {
+
+                                    userId:
+                                        req.user.id,
+
+                                    missionId:
+                                        missionId,
+
+                                    completed:
+                                        true,
+
+                                    completedAt:
+                                        new Date()
+
+                                }
+
+                            });
+
+
+                        // Update hunter
+                        const updatedHunter =
+                            await tx.user.update({
+
+                                where: {
+
+                                    id:
+                                        req.user.id
+
+                                },
+
+                                data: {
+
+                                    hunterExp:
+                                        newTotalExp,
+
+                                    hunterLevel:
+                                        newLevel,
+
+                                    hunterRank:
+                                        newRank
+
+                                },
+
+                                select: {
+
+                                    hunterExp: true,
+
+                                    hunterLevel: true,
+
+                                    hunterRank: true,
+
+                                    hunterScore: true
+
+                                }
+
+                            });
+
+
+                        return {
+
+                            userMission,
+
+                            updatedHunter
+
+                        };
+
+                    }
+                );
+
+
+            // ------------------------------------------------
+            // RESPONSE
+            // ------------------------------------------------
+
+            res.json({
+
+                message:
+                    "Mission completed successfully! ⚔️",
+
+                earnedExp:
+                    earnedExp,
+
+                hunter: {
+
+                    exp:
+                        result.updatedHunter.hunterExp,
+
+                    level:
+                        result.updatedHunter.hunterLevel,
+
+                    rank:
+                        result.updatedHunter.hunterRank,
+
+                    score:
+                        result.updatedHunter.hunterScore
+
+                }
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Complete mission error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Failed to complete mission"
+
+            });
+
+        }
+
+    }
+);
+
+// ==========================
+// DAILY MISSION SETUP
+// ==========================
+
+async function setupDailyMissions() {
+
+    try {
+
+        const missionCount = await prisma.mission.count();
+
+        // Create default missions if none exist
+        if (missionCount === 0) {
+
+            await prisma.mission.createMany({
+
+                data: [
+
+                    {
+                        title: "Complete Resume Analysis",
+                        description: "Analyze your resume using the AI Resume Analyzer.",
+                        rewardExp: 50,
+                        type: "DAILY"
+                    },
+
+                    {
+                        title: "Apply To 2 Jobs",
+                        description: "Find and apply to at least two suitable jobs.",
+                        rewardExp: 75,
+                        type: "DAILY"
+                    },
+
+                    {
+                        title: "Add A New Skill",
+                        description: "Add a new skill to your Hunter profile.",
+                        rewardExp: 40,
+                        type: "DAILY"
+                    },
+
+                    {
+                        title: "Complete AI Analysis",
+                        description: "Run your resume through the AI analysis system.",
+                        rewardExp: 100,
+                        type: "DAILY"
+                    },
+
+                    {
+                        title: "Improve Your Profile",
+                        description: "Update your Hunter profile with useful information.",
+                        rewardExp: 50,
+                        type: "DAILY"
+                    }
+
+                ]
+
+            });
+
+            console.log(
+                "✅ Default daily missions created"
+            );
+
+        } else {
+
+            console.log(
+                "✅ Daily missions already exist"
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "❌ Daily mission setup error:",
+            error
+        );
+
+    }
+
+}
+
+setupDailyMissions();
 
 // ==========================
 // Start Server

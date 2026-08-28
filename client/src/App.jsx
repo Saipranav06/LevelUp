@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Missions from "./pages/Missions";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -8,6 +9,7 @@ import Analyze from "./pages/Analyze";
 import Jobs from "./pages/Jobs";
 import MyApplications from "./pages/MyApplications";
 import EmployerDashboard from "./pages/EmployerDashboard";
+import Signup from "./pages/Signup";
 
 function App() {
     return (
@@ -28,6 +30,8 @@ function App() {
                     path="/login"
                     element={<Login />}
                 />
+
+                <Route path="/signup" element={<Signup />} />
 
 
                 {/* ==========================
@@ -67,6 +71,11 @@ function App() {
                 <Route
                     path="/my-applications"
                     element={<MyApplications />}
+                />
+                
+                <Route
+                    path="/missions"
+                    element={<Missions />}
                 />
 
                 {/* ==========================
