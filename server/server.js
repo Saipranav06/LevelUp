@@ -2256,48 +2256,61 @@ ${resumeText}
             // ==========================
 
             const aiResponse =
-                await axios.post(
+    await axios.post(
 
-                    "https://openrouter.ai/api/v1/chat/completions",
+        "https://openrouter.ai/api/v1/chat/completions",
 
-                    {
+        {
 
-                        model:
-                            "openrouter/free",
+            model:
+                "openrouter/free",
 
-                        messages: [
+            messages: [
 
-                            {
-                                role: "user",
-                                content: prompt
-                            }
+                {
+                    role: "system",
 
-                        ]
+                    content:
+                        "You are a resume analysis system. Return ONLY valid JSON. Do not include explanations, markdown, safety messages, or any text outside the JSON object. The JSON must contain a skills array."
 
-                    },
+                },
 
-                    {
+                {
+                    role: "user",
 
-                        headers: {
+                    content:
+                        prompt
+                }
 
-                            Authorization:
-                                `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            ],
 
-                            "Content-Type":
-                                "application/json",
+            response_format: {
+                type: "json_object"
+            }
 
-                            "HTTP-Referer":
-                                "http://localhost:5173",
+        },
 
-                            "X-Title":
-                                "Level Up Resume Analyzer"
+        {
 
-                        }
+            headers: {
 
-                    }
+                Authorization:
+                    `Bearer ${process.env.OPENROUTER_API_KEY}`,
 
-                );
+                "Content-Type":
+                    "application/json",
 
+                "HTTP-Referer":
+                    "http://localhost:5173",
+
+                "X-Title":
+                    "Level Up Resume Analyzer"
+
+            }
+
+        }
+
+    );
 
             // ==========================
             // Get AI Response
@@ -2327,26 +2340,61 @@ ${resumeText}
 
             let analysis;
 
-            try {
+try {
 
-                analysis =
-                    JSON.parse(aiText);
+    // Clean possible markdown / extra text
+    const cleanedAIText =
+        aiText
+            .replace(/```json/gi, "")
+            .replace(/```/g, "")
+            .trim();
 
-            } catch (error) {
+    const firstBrace =
+        cleanedAIText.indexOf("{");
 
-                console.error(
-                    "AI returned invalid JSON:",
-                    aiText
-                );
+    const lastBrace =
+        cleanedAIText.lastIndexOf("}");
 
-                return res.status(500).json({
+    if (
+        firstBrace === -1 ||
+        lastBrace === -1
+    ) {
 
-                    message:
-                        "AI returned an invalid response"
+        throw new Error(
+            "No JSON object found in AI response"
+        );
 
-                });
+    }
 
-            }
+    const jsonText =
+        cleanedAIText.substring(
+            firstBrace,
+            lastBrace + 1
+        );
+
+    analysis =
+        JSON.parse(jsonText);
+
+} catch (error) {
+
+    console.error(
+        "AI JSON parsing error:",
+        error
+    );
+
+    console.error(
+        "Raw AI response:",
+        aiText
+    );
+
+    return res.status(500).json({
+
+        message:
+            "AI returned an invalid response"
+
+    });
+
+}
 
             // ==========================
 // Save Applicant Skills
