@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Missions.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://levelup-server-ppvx.onrender.com";
 
 function Missions() {
     const navigate = useNavigate();
